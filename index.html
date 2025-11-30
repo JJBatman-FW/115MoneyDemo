@@ -60,11 +60,31 @@
         .btn-back { border: 1px solid #ced4da; color: #6c757d; background: white; font-size: 0.9rem; padding: 6px 16px; transition: all 0.2s; }
         .btn-back:hover { background-color: #e9ecef; color: #333; border-color: #adb5bd; }
 
-        /* Keyword Buttons */
-        .keyword-btn { margin: 6px; border-radius: 20px; font-size: 1.1rem; padding: 12px 24px; border: 1px solid #dee2e6; color: #555; background: white; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); white-space: normal; max-width: 300px; text-align: left; display: inline-flex; align-items: center; }
-        .keyword-btn:hover { border-color: var(--primary-color); color: white; background: var(--primary-color); transform: translateY(-3px); box-shadow: 0 5px 10px rgba(0,0,0,0.15); }
-        .keyword-btn.has-multiple { border-color: #f1c40f; background-color: #fffcf0; color: #8a6d05; }
-        .keyword-btn.has-multiple:hover { background-color: #f1c40f; color: #212529; }
+        /* Keyword Buttons (Updated UI) */
+        .keyword-btn { 
+            margin: 6px; 
+            border-radius: 20px; 
+            font-size: 1.1rem; 
+            padding: 10px 20px; 
+            border: 1px solid #dee2e6; 
+            color: #555; 
+            background: white; 
+            transition: all 0.2s; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+            white-space: normal; 
+            max-width: 320px; 
+            text-align: left; 
+            display: inline-flex; 
+            align-items: center; 
+        }
+        .keyword-btn:hover { 
+            border-color: var(--primary-color); 
+            color: var(--primary-color); 
+            background: #f8f9fa; 
+            transform: translateY(-3px); 
+            box-shadow: 0 5px 10px rgba(0,0,0,0.15); 
+        }
+        /* 移除舊的 has-multiple 黃底樣式，統一風格 */
 
         /* Plan Block */
         .plan-block { cursor: pointer; transition: all 0.2s; border: 1px solid #e0e0e0; border-left: 4px solid transparent; position: relative; }
@@ -83,7 +103,7 @@
         .modal-plan-title { font-weight: 800; font-size: 1.8rem; color: #2c3e50; line-height: 1.3; }
         .modal-total-amount { font-family: 'Courier New', monospace; font-weight: bold; font-size: 1.5rem; color: #2c3e50; }
 
-        /* ★★★ Outcome Collapsible Styles ★★★ */
+        /* Outcome Collapsible Styles */
         .outcome-container {
             position: relative;
             background-color: #f8f9fa;
@@ -96,13 +116,12 @@
             margin-bottom: 0;
             color: #555;
             line-height: 1.6;
-            white-space: pre-line; /* 保留換行 */
+            white-space: pre-line;
             overflow: hidden;
             transition: max-height 0.3s ease-out;
         }
         .outcome-text.collapsed {
-            max-height: 4.8em; /* 顯示約 3 行 */
-            /* 底部淡出效果 */
+            max-height: 4.8em;
             mask-image: linear-gradient(180deg, #000 60%, transparent);
             -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent);
         }
@@ -210,7 +229,9 @@
                 </div>
                 <div class="card border-0 shadow-sm p-4 bg-white rounded-4 text-center">
                     <div id="keywords-container" class="d-flex flex-wrap gap-2 justify-content-center"></div>
-                    <div class="mt-4 text-muted fst-italic small"><span class="badge bg-warning text-dark me-2">黃色標籤</span> 表示多個計畫包含此項目</div>
+                    <div class="mt-4 text-muted fst-italic small">
+                        <span class="badge bg-warning text-dark me-1">數字</span> 表示關鍵字對應的工作計畫數量
+                    </div>
                 </div>
             </section>
 
@@ -340,8 +361,9 @@
             "debt": { name: "債務付息支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 1059 億元" },
             "repayment": { name: "還本付息事務支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 4.2 億元" },
             "subsidy": { name: "專案補助支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 303 億元" },
-			"other": { name: "其他支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 81 億元" }
+            "other": { name: "其他支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 81 億元" }
         };
+
 
         const CHART_COLORS = ['#3498db', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6', '#34495e', '#e67e22'];
 
@@ -444,7 +466,7 @@
                         agency: row.agency,
                         amount: row.amount,
                         reviewStatus: row.review_status || '',
-                        outcome: row.outcome || '', // 加入 Outcome
+                        outcome: row.outcome || '',
                         breakdown: breakdown, 
                         cutFrozenVal: row.cut_frozen_val || '0,0',
                         reviewStats: row.review_stats || '0,0;0,0;0,0',
@@ -502,9 +524,9 @@
                 const plans = categoryData[keyword];
                 const count = plans.length;
                 const btn = document.createElement('button');
-                btn.className = `btn keyword-btn ${count > 1 ? 'has-multiple' : ''}`;
-                let html = keyword;
-                if (count > 1) html += ` <span class="badge bg-warning text-dark ms-1">${count}</span>`;
+                btn.className = `btn keyword-btn`; 
+                // ★★★ Modified UI for Step 2 Badge ★★★
+                let html = `${keyword} <span class="badge bg-warning text-dark ms-1 rounded-pill">${count}</span>`;
                 btn.innerHTML = html;
                 btn.onclick = () => renderStep3List(keyword, plans);
                 container.appendChild(btn);
@@ -572,18 +594,15 @@
             document.getElementById('m-title').innerText = plan.title;
             document.getElementById('m-amount').innerText = plan.amount;
 
-            // ★★★ Outcome Collapsible Logic ★★★
+            // Outcome
             const outcomeText = document.getElementById('m-outcome-text');
             const outcomeToggle = document.getElementById('m-outcome-toggle');
-            
-            // Reset state
             outcomeText.classList.remove('expanded');
             outcomeText.classList.add('collapsed');
             outcomeToggle.innerText = '▼ 展開完整內容';
             
             if (plan.outcome && plan.outcome.length > 0) {
                 outcomeText.innerText = plan.outcome;
-                // 簡單判斷：字數少則隱藏按鈕直接展開，字數多則顯示按鈕
                 if(plan.outcome.length < 60) {
                     outcomeToggle.style.display = 'none';
                     outcomeText.classList.remove('collapsed');
@@ -596,7 +615,7 @@
                 outcomeText.classList.remove('collapsed');
             }
 
-            // 1. 水平長條圖
+            // 1. Horizontal Bar
             const cfVals = plan.cutFrozenVal.split(/[,，]/).map(s => parseInt(s.trim()) || 0);
             const cutVal = cfVals[0] || 0;
             const freezeVal = cfVals[1] || 0;
@@ -616,7 +635,7 @@
                 <div class="status-seg cut" style="width: ${cutPct}%">${cutPct > 5 ? '刪'+cutPct.toFixed(1)+'%' : ''}</div>
             `;
 
-            // 2. 垂直長條圖
+            // 2. Vertical Chart
             const stages = plan.reviewStats.split(/[;；]/);
             const stageNames = ['委員會', '黨團協商', '院會'];
             const chartWrapper = document.getElementById('m-chart-wrapper');
@@ -653,7 +672,7 @@
                 chartWrapper.appendChild(col);
             });
 
-            // 3. 表格
+            // 3. Table
             const tbody = document.getElementById('m-details-table-body');
             tbody.innerHTML = '';
             const detailRows = plan.detailsTable.split(/[;；]/);
@@ -665,7 +684,7 @@
                 tbody.appendChild(tr);
             });
 
-            // 4. 統刪
+            // 4. General Cut
             const genCutDiv = document.getElementById('m-general-cut');
             if(plan.generalCut) {
                 genCutDiv.innerText = plan.generalCut;
@@ -674,7 +693,7 @@
                 genCutDiv.classList.add('d-none');
             }
 
-            // 5. 委員標籤
+            // 5. Legislators
             const renderTags = (containerId, str, cssClass) => {
                 const container = document.getElementById(containerId);
                 container.innerHTML = '';
@@ -694,7 +713,6 @@
             modal.show();
         }
 
-        // Outcome Toggle Function
         function toggleOutcome() {
             const text = document.getElementById('m-outcome-text');
             const btn = document.getElementById('m-outcome-toggle');
