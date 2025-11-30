@@ -310,9 +310,36 @@
         const TARGET_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6ZFEMdgBFyC6O0Axmx7TvcckTzMoDCxrb5V_8gHJmyzBEXx-cLj6RtRWkyUUap-qiK_C2G-GwJFMJ/pub?gid=1922321201&single=true&output=csv'; // 您的 Google Sheet CSV 連結
 
         const CATEGORY_CONFIG = {
-            "state": { name: "國務支出", icon: "🏛️", color: "#2c3e50", desc: "總統行使職權、國家安全會議運作。", total: "約 14.1 億元" },
-            "admin": { name: "行政支出", icon: "💼", color: "#2980b9", desc: "行政院及幕僚機關運作與政策規劃。", total: "約 373 億元" },
-            "legislative": { name: "立法支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 38.7 億元" }
+            "state": { name: "國務支出", icon: "🏛️", color: "#2c3e50", desc: "總統行使職權、國家安全會議運作。", total: "約 14 億元" },
+            "admin": { name: "行政支出", icon: "💼", color: "#2980b9", desc: "行政院及幕僚機關運作與政策規劃。", total: "約 69 億元" },
+            "legislative": { name: "立法支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 39 億元" },
+		    "judiciary": { name: "司法支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 812 億元" },
+            "exam": { name: "考試支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 26 億元" },
+            "control": { name: "監察支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 30 億元" },
+            "civil": { name: "民政支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 726 億元" },
+            "police": { name: "警政支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 357 億元" },
+            "foreign": { name: "外交支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 415 億元" },
+            "finance": { name: "財務支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 510 億元" },
+            "overseas": { name: "僑務支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 26 億元" },
+            "defence": { name: "國防支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 5488 億元" },
+            "education": { name: "教育支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 3237 億元" },
+            "science": { name: "科學支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 1817 億元" },
+            "culture": { name: "文化支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 513 億元" },
+            "agriculture": { name: "農業支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 1669 億元" },
+            "industry": { name: "工業支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 522 億元" },
+            "transport": { name: "交通支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 1622 億元" },
+            "service": { name: "其他經濟服務支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 462 億元" },
+            "insurance": { name: "社會保險支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 6109 億元" },
+            "assistance": { name: "社會救助支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 88 億元" },
+            "welfare": { name: "福利服務支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 1416 億元" },
+            "employment": { name: "國民就業支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 20 億元" },
+            "medical": { name: "醫療保健支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 686 億元" },
+            "environment": { name: "環境保護支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 266 億元" },
+            "pension": { name: "退休撫卹給付支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 1841 億元" },
+            "retirement": { name: "退休撫卹業務支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 3.3 億元" },
+            "debt": { name: "債務付息支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 1059 億元" },
+            "repayment": { name: "還本付息事務支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 4.2 億元" },
+            "subsidy": { name: "專案補助支出", icon: "⚖️", color: "#27ae60", desc: "立法院運作、法案審查與國會外交。", total: "約 303 億元" }
         };
 
         const CHART_COLORS = ['#3498db', '#e74c3c', '#f1c40f', '#2ecc71', '#9b59b6', '#34495e', '#e67e22'];
