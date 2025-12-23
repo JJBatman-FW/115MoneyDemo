@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (最終完美整合版)</title>
+    <title>中央政府總預算觀測站 (手機版修正)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -96,17 +96,15 @@
 
         .chart-container { position: relative; height: 350px; width: 100%; }
 
-        /* ★★★ 1000元紙鈔背景容器 (修正版：完美貼合) ★★★ */
+        /* ★★★ 1000元紙鈔背景容器 (修正版：絕對定位強制貼合) ★★★ */
         .bill-container {
-            position: relative;
+            position: relative; /* 作為定位基準點 */
             width: 100%;
-            /* 強制維持 1000 元紙鈔比例 160mm x 70mm */
+            /* 強制維持 1000 元紙鈔比例 160mm x 70mm = 16:7 */
             aspect-ratio: 16 / 7; 
-            height: auto !important;
             
             background-image: url('1000.png'); 
-            
-            /* 強制圖片 100% 填滿容器，不裁切，配合 aspect-ratio 使用 */
+            /* 強制圖片 100% 填滿容器，不裁切 */
             background-size: 100% 100%; 
             background-position: center;
             background-repeat: no-repeat;
@@ -114,15 +112,17 @@
             border-radius: 8px;
             box-shadow: 0 6px 15px rgba(0,0,0,0.1);
             
-            /* 移除內距，讓 Bar 跟圖片邊緣完全切齊 */
             padding: 0; 
-            
             overflow: hidden;
             border: 2px solid var(--secondary-color);
-            box-sizing: border-box; /* 確保邊框包含在寬度內 */
+            box-sizing: border-box; 
         }
         
+        /* ★★★ 關鍵修改：強制 Canvas 絕對定位，無視任何流動佈局，完全貼合父容器 ★★★ */
         .bill-container canvas {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
             width: 100% !important;
             height: 100% !important;
             display: block;
