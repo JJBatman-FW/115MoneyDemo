@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (現代風格完整版)</title>
+    <title>中央政府總預算觀測站 (GAS穩定版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -11,21 +11,18 @@
     <style>
         /* --- 基礎設定 (v56 現代高對比配色) --- */
         :root {
-            /* 指定配色 */
-            --bg-color: #F8F8F8;       /* 背景底色 (極淺灰) */
-            --primary-color: #070707;  /* 主要文字 (幾近純黑) */
-            --secondary-color: #086788;/* 深藍綠 (主要強調/標題裝飾/通過) */
-            --accent-color: #F0C808;   /* 鮮明黃 (亮點/凍結/強調邊框) */
-            --highlight-color: #A6DAEE;/* 天藍色 (Hover/次要) */
+            --bg-color: #F8F8F8;       /* 背景底色 */
+            --primary-color: #070707;  /* 主要文字 */
+            --secondary-color: #086788;/* 深藍綠 */
+            --accent-color: #F0C808;   /* 鮮明黃 */
+            --highlight-color: #A6DAEE;/* 天藍色 */
             
-            /* 功能性顏色 (鮮明化) */
-            --danger-color: #E74C3C;   /* 亮紅色 (刪減) */
-            --warning-color: var(--accent-color); /* 使用鮮明黃 (凍結) */
-            --success-color: var(--secondary-color); /* 使用深藍綠 (通過) */
-            --card-bg: #FFFFFF;        /* 卡片白底 */
-            --border-color: #e0e0e0;   /* 淺灰邊框 */
+            --danger-color: #E74C3C;   
+            --warning-color: var(--accent-color); 
+            --success-color: var(--secondary-color);
+            --card-bg: #FFFFFF;        
+            --border-color: #e0e0e0;   
             
-            /* 政黨代表色 */
             --party-kmt: #000095;
             --party-dpp: #1b9431;
             --party-tpp: #28c7c7;
@@ -110,6 +107,7 @@
             box-shadow: 0 6px 15px rgba(0,0,0,0.1);
             padding: 0; 
             overflow: hidden;
+            border: 2px solid var(--secondary-color);
         }
         .bill-container canvas {
             width: 100% !important;
@@ -157,7 +155,7 @@
         }
         .big-btn:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2); filter: brightness(1.1); }
         .btn-a { background: linear-gradient(135deg, var(--secondary-color), #0a7ea6); color: white; }
-        .btn-c { background: linear-gradient(135deg, var(--secondary-color), #0a7ea6); color: white; }
+        .btn-c { background: linear-gradient(135deg, var(--accent-color), #ffd500); color: var(--primary-color); }
         
         /* Search */
         .search-wrapper { margin: 2rem 0; text-align: center; width: 100%; }
@@ -204,7 +202,6 @@
         .modal-tab { flex: 1; text-align: center; padding: 18px; cursor: pointer; font-weight: bold; color: #777; border-bottom: 4px solid transparent; transition: 0.3s; font-size: 1.05rem;}
         .modal-tab:hover { background: rgba(8, 103, 136, 0.05); color: var(--secondary-color); }
         .modal-tab.active { color: var(--secondary-color); border-bottom-color: var(--secondary-color); background: white; }
-        /* Modal Body 捲軸設定 */
         .modal-body-area { padding: 30px; overflow-y: auto; max-height: calc(90vh - 180px); scroll-behavior: auto; }
         .tab-content { display: none; animation: fadeIn 0.3s; }
         .tab-content.active { display: block; }
@@ -479,10 +476,14 @@
     </footer>
 
     <script>
+        // ★★★ 替換成你的 Google Apps Script 網址 ★★★
+        const YOUR_GAS_URL = 'https://script.google.com/macros/s/AKfycbwG50F239C9Z235-512X20a1122a2-3-333/exec'; // 範例，請換成你自己的
+
+        // 設定資料來源 (透過 GAS 轉發)
         const dataSources = {
-            'page-a': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6ZFEMdgBFyC6O0Axmx7TvcckTzMoDCxrb5V_8gHJmyzBEXx-cLj6RtRWkyUUap-qiK_C2G-GwJFMJ/pub?gid=612819456&single=true&output=csv', 
-            'page-b': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6ZFEMdgBFyC6O0Axmx7TvcckTzMoDCxrb5V_8gHJmyzBEXx-cLj6RtRWkyUUap-qiK_C2G-GwJFMJ/pub?gid=1304436957&single=true&output=csv', 
-            'page-c': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS6ZFEMdgBFyC6O0Axmx7TvcckTzMoDCxrb5V_8gHJmyzBEXx-cLj6RtRWkyUUap-qiK_C2G-GwJFMJ/pub?gid=1025885437&single=true&output=csv' 
+            'page-a': YOUR_GAS_URL + '?gid=612819456', 
+            'page-b': YOUR_GAS_URL + '?gid=1304436957', 
+            'page-c': YOUR_GAS_URL + '?gid=1025885437' 
         };
 
         // ★★★ 測試用備援資料 (Mock Data) ★★★
@@ -673,44 +674,27 @@
         // ★★★ 智慧型資料抓取 (Mock Data Fallback) ★★★
         async function fetchData(pageId, silent = false) {
             const loader = document.getElementById('loader');
+            const errorDisplay = document.getElementById('error-display');
             
             // 定義要嘗試的代理服務列表 (優先順序)
-            const proxyServices = [
-                // 1. AllOrigins JSON mode (Best for file://)
-                url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-                // 2. CodeTabs (Fallback)
-                url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
-            ];
+            // 優先使用 GAS (最穩定)，若未設定則使用 Mock Data
+            let targetUrl = dataSources[pageId];
 
-            let rawUrl = dataSources[pageId];
-            if(pageId === 'page-budget') rawUrl = null; 
-            if(pageId === 'page-legislator') rawUrl = dataSources['page-c'];
-            
-            if (!rawUrl) { 
-                if(pageId === 'page-a') rawUrl = dataSources['page-a'];
-                else if(pageId === 'page-b') rawUrl = dataSources['page-b'];
+            if (!targetUrl) { 
+                if(pageId === 'page-a') targetUrl = dataSources['page-a'];
+                else if(pageId === 'page-b') targetUrl = dataSources['page-b'];
                 else return []; 
             }
 
-            const cacheBuster = '&t=' + new Date().getTime();
-            const targetUrl = rawUrl + cacheBuster;
-
             if (!silent) loader.style.display = 'flex';
 
-            // 嘗試代理連線
-            for (const proxyGenerator of proxyServices) {
-                try {
-                    const proxyUrl = proxyGenerator(targetUrl);
-                    console.log(`[${pageId}] Trying proxy: ${proxyUrl}`);
-                    
-                    const response = await fetch(proxyUrl);
+            try {
+                // 如果是 GAS URL，直接 Fetch
+                if (targetUrl.includes('script.google.com')) {
+                    const response = await fetch(targetUrl);
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const csvText = await response.text();
                     
-                    const data = await response.json();
-                    const csvText = data.contents || data; // allorigins returns {contents: string}, others might return string direct
-
-                    if (typeof csvText !== 'string') throw new Error("Invalid response format");
-
                     const results = Papa.parse(csvText, {
                         header: true, skipEmptyLines: true, transformHeader: h => h.trim() 
                     });
@@ -719,7 +703,6 @@
                         let newRow = {}; for (let key in row) { newRow[key] = row[key] ? row[key].trim() : ''; } return newRow;
                     });
 
-                    // 存入全域變數
                     if (pageId === 'page-a') { allDataPageA = cleanData; } 
                     else if (pageId === 'page-b') { allDataPageB = cleanData; processPageBData(allDataPageB); } 
                     else if (pageId === 'page-c') { 
@@ -728,28 +711,28 @@
                     }
 
                     if (!silent) loader.style.display = 'none';
-                    return cleanData; 
-
-                } catch (error) {
-                    console.warn(`[${pageId}] Proxy failed, trying next...`);
+                    return cleanData;
+                } else {
+                     // 如果不是 GAS URL (例如還沒換)，直接拋出錯誤進入 Mock Data
+                     throw new Error("No valid GAS URL provided.");
                 }
-            }
 
-            // ★★★ 全部失敗，啟用 Mock Data 模式 ★★★
-            console.error(`[${pageId}] All proxies failed. Using Mock Data.`);
-            isDemoMode = true; // 啟用全域 Demo 標記
-            
-            let mockData = [];
-            if (pageId === 'page-a') { mockData = MOCK_DATA_A; allDataPageA = mockData; }
-            else if (pageId === 'page-b') { mockData = MOCK_DATA_B; allDataPageB = mockData; processPageBData(mockData); }
-            else if (pageId === 'page-c') { mockData = MOCK_DATA_C; allDataPageC = mockData; filterLegislators('all'); }
-            
-            if (!silent) {
-                loader.style.display = 'none';
-                // 顯示 Demo 提示
-                document.querySelectorAll('.demo-mode-badge').forEach(el => el.style.display = 'block');
+            } catch (error) {
+                console.warn(`[${pageId}] Fetch failed, using Mock Data.`, error);
+                
+                // ★★★ 全部失敗，啟用 Mock Data 模式 ★★★
+                isDemoMode = true; 
+                let mockData = [];
+                if (pageId === 'page-a') { mockData = MOCK_DATA_A; allDataPageA = mockData; }
+                else if (pageId === 'page-b') { mockData = MOCK_DATA_B; allDataPageB = mockData; processPageBData(mockData); }
+                else if (pageId === 'page-c') { mockData = MOCK_DATA_C; allDataPageC = mockData; filterLegislators('all'); }
+                
+                if (!silent) {
+                    loader.style.display = 'none';
+                    document.querySelectorAll('.demo-mode-badge').forEach(el => el.style.display = 'block');
+                }
+                return mockData;
             }
-            return mockData;
         }
 
         function filterLegislators(party) {
@@ -964,15 +947,15 @@
                 labels:['115年度預算結構'],
                 datasets:[
                     // 使用高飽和度、鮮明的色彩，透明度設為 0.7 以保持活力並顯示紙鈔
-                    { label:'社會福利', data:[831800000000], backgroundColor: 'rgba(231, 76, 60, 0.5)' }, // 亮紅
-                    { label:'教育科學文化', data:[556600000000], backgroundColor: 'rgba(240, 200, 8, 0.5)' }, // 鮮明黃
-                    { label:'國防', data:[548800000000], backgroundColor: 'rgba(8, 103, 136, 0.5)' }, // 深藍綠
-                    { label:'經濟發展', data:[427500000000], backgroundColor: 'rgba(46, 204, 113, 0.5)' }, // 翠綠
-                    { label:'一般政務', data:[302600000000], backgroundColor: 'rgba(155, 89, 182, 0.5)' }, // 紫色
-                    { label:'退休撫卹', data:[184400000000], backgroundColor: 'rgba(52, 152, 219, 0.5)' }, // 亮藍
-                    { label:'債務還本付息', data:[106300000000], backgroundColor: 'rgba(230, 126, 34, 0.5)' }, // 橘色
-                    { label:'補助及其他', data:[50400000000], backgroundColor: 'rgba(26, 188, 156, 0.5)' }, // 青綠
-                    { label:'社區發展及環境保護', data:[26600000000], backgroundColor: 'rgba(52, 73, 94, 0.5)' } // 深藍灰
+                    { label:'社會福利', data:[831800000000], backgroundColor: 'rgba(231, 76, 60, 0.7)' }, // 亮紅
+                    { label:'教育科學文化', data:[556600000000], backgroundColor: 'rgba(240, 200, 8, 0.7)' }, // 鮮明黃
+                    { label:'國防', data:[548800000000], backgroundColor: 'rgba(8, 103, 136, 0.7)' }, // 深藍綠
+                    { label:'經濟發展', data:[427500000000], backgroundColor: 'rgba(46, 204, 113, 0.7)' }, // 翠綠
+                    { label:'一般政務', data:[302600000000], backgroundColor: 'rgba(155, 89, 182, 0.7)' }, // 紫色
+                    { label:'退休撫卹', data:[184400000000], backgroundColor: 'rgba(52, 152, 219, 0.7)' }, // 亮藍
+                    { label:'債務還本付息', data:[106300000000], backgroundColor: 'rgba(230, 126, 34, 0.7)' }, // 橘色
+                    { label:'補助及其他', data:[50400000000], backgroundColor: 'rgba(26, 188, 156, 0.7)' }, // 青綠
+                    { label:'社區發展及環境保護', data:[26600000000], backgroundColor: 'rgba(52, 73, 94, 0.7)' } // 深藍灰
                 ]
             };
 
