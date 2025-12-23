@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (樣式回歸與連線修復版)</title>
+    <title>中央政府總預算觀測站 (最終完美整合版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -96,22 +96,32 @@
 
         .chart-container { position: relative; height: 350px; width: 100%; }
 
-        /* 1000元紙鈔背景容器 */
+        /* ★★★ 1000元紙鈔背景容器 (修正版：完美貼合) ★★★ */
         .bill-container {
             position: relative;
             width: 100%;
-            aspect-ratio: 16 / 7;
+            /* 強制維持 1000 元紙鈔比例 160mm x 70mm */
+            aspect-ratio: 16 / 7; 
             height: auto !important;
+            
             background-image: url('1000.png'); 
-            background-size: cover;
+            
+            /* 強制圖片 100% 填滿容器，不裁切，配合 aspect-ratio 使用 */
+            background-size: 100% 100%; 
             background-position: center;
             background-repeat: no-repeat;
+            
             border-radius: 8px;
             box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            
+            /* 移除內距，讓 Bar 跟圖片邊緣完全切齊 */
             padding: 0; 
+            
             overflow: hidden;
             border: 2px solid var(--secondary-color);
+            box-sizing: border-box; /* 確保邊框包含在寬度內 */
         }
+        
         .bill-container canvas {
             width: 100% !important;
             height: 100% !important;
@@ -478,8 +488,8 @@
     </footer>
 
     <script>
-        // ★★★ 請務必在此填入您正確的 GAS 網址 ★★★
-        const YOUR_GAS_URL = 'https://script.google.com/macros/s/AKfycbx9zsgAufhC0P94sHbx3EqMjnGdjB0GGBoDBZIoD4VJSe5RrMio5TLfDYL9Q5uqrSWy/exec'; 
+        // ★★★ 請務必在此填入您正確的 GAS 網址 (記得更新部署為新版本) ★★★
+        const YOUR_GAS_URL = 'https://script.google.com/macros/s/AKfycbzG55TUuaKpgD9dqG8clvDJ0iXwtDtZHNAbHJ_t9mWPNAzYdNyf2pvkT3XvDJRUOX7L/exec'; 
 
         // 設定資料來源 (透過 GAS 轉發)
         const dataSources = {
@@ -959,15 +969,15 @@
                 labels:['115年度預算結構'],
                 datasets:[
                     // 使用高飽和度、鮮明的色彩，透明度設為 0.7 以保持活力並顯示紙鈔
-                    { label:'社會福利', data:[831800000000], backgroundColor: 'rgba(231, 76, 60, 0.7)' }, // 亮紅
-                    { label:'教育科學文化', data:[556600000000], backgroundColor: 'rgba(240, 200, 8, 0.7)' }, // 鮮明黃
-                    { label:'國防', data:[548800000000], backgroundColor: 'rgba(8, 103, 136, 0.7)' }, // 深藍綠
-                    { label:'經濟發展', data:[427500000000], backgroundColor: 'rgba(46, 204, 113, 0.7)' }, // 翠綠
-                    { label:'一般政務', data:[302600000000], backgroundColor: 'rgba(155, 89, 182, 0.7)' }, // 紫色
-                    { label:'退休撫卹', data:[184400000000], backgroundColor: 'rgba(52, 152, 219, 0.7)' }, // 亮藍
-                    { label:'債務還本付息', data:[106300000000], backgroundColor: 'rgba(230, 126, 34, 0.7)' }, // 橘色
-                    { label:'補助及其他', data:[50400000000], backgroundColor: 'rgba(26, 188, 156, 0.7)' }, // 青綠
-                    { label:'社區發展及環境保護', data:[26600000000], backgroundColor: 'rgba(52, 73, 94, 0.7)' } // 深藍灰
+                    { label:'社會福利', data:[831800000000], backgroundColor: 'rgba(231, 76, 60, 0.5)' }, // 亮紅
+                    { label:'教育科學文化', data:[556600000000], backgroundColor: 'rgba(240, 200, 8, 0.5)' }, // 鮮明黃
+                    { label:'國防', data:[548800000000], backgroundColor: 'rgba(8, 103, 136, 0.5)' }, // 深藍綠
+                    { label:'經濟發展', data:[427500000000], backgroundColor: 'rgba(46, 204, 113, 0.5)' }, // 翠綠
+                    { label:'一般政務', data:[302600000000], backgroundColor: 'rgba(155, 89, 182, 0.5)' }, // 紫色
+                    { label:'退休撫卹', data:[184400000000], backgroundColor: 'rgba(52, 152, 219, 0.5)' }, // 亮藍
+                    { label:'債務還本付息', data:[106300000000], backgroundColor: 'rgba(230, 126, 34, 0.5)' }, // 橘色
+                    { label:'補助及其他', data:[50400000000], backgroundColor: 'rgba(26, 188, 156, 0.5)' }, // 青綠
+                    { label:'社區發展及環境保護', data:[26600000000], backgroundColor: 'rgba(52, 73, 94, 0.5)' } // 深藍灰
                 ]
             };
 
