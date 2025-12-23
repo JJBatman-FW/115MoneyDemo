@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (大地色系版)</title>
+    <title>中央政府總預算觀測站</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     
     <style>
-        /* --- 基礎設定 (全新配色) --- */
+        /* --- 基礎設定 (大地色系) --- */
         :root {
-            /* 您的指定配色 */
+            /* 指定配色 */
             --bg-color: #fff7e6;       /* 淺米色 (背景) */
             --accent-color: #fc8e57;   /* 亮橘色 (強調/按鈕) */
             --secondary-color: #a06a50;/* 紅褐色 (邊框/次要) */
             --primary-color: #55433b;  /* 深褐色 (文字/標題) */
             
-            /* 功能性顏色 (保留原意) */
+            /* 功能性顏色 (保留用於狀態區分) */
             --danger-color: #e74c3c;
             --warning-color: #f1c40f;
             --success-color: #2ecc71;
@@ -29,22 +29,30 @@
             --party-npp: #f9be01;
             --party-other: #95a5a6;
         }
-        * { box-sizing: border-box; }
-        body { font-family: "Noto Sans TC", sans-serif; background-color: var(--bg-color); margin: 0; line-height: 1.6; color: var(--primary-color); display: flex; flex-direction: column; min-height: 100vh; }
         
-        /* Header (背景改為淺色，文字改深色) */
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: "Noto Sans TC", sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            line-height: 1.6; 
+            color: var(--primary-color); 
+            display: flex; flex-direction: column; min-height: 100vh; 
+        }
+        
+        /* Header */
         header { 
             background-color: var(--bg-color); 
             color: var(--primary-color); 
             padding: 1rem 2rem; 
             display: flex; justify-content: space-between; align-items: center; 
             position: sticky; top: 0; z-index: 100; 
-            box-shadow: 0 2px 10px rgba(85, 67, 59, 0.1); /* 陰影改為深褐色系 */
-            border-bottom: 2px solid #e6dcc8; /* 增加分隔線 */
+            box-shadow: 0 2px 10px rgba(85, 67, 59, 0.1); 
+            border-bottom: 1px solid rgba(160, 106, 80, 0.2);
         }
-        header h1 { margin: 0; font-size: 1.4rem; cursor: pointer; white-space: nowrap; font-weight: 900; letter-spacing: 1px; }
+        header h1 { margin: 0; font-size: 1.4rem; cursor: pointer; white-space: nowrap; font-weight: 800; letter-spacing: 1px; }
         
-        /* Nav Buttons */
         header nav { display: flex; gap: 10px; }
         header nav button { 
             background: transparent; 
@@ -57,14 +65,19 @@
             background: var(--accent-color); 
             color: white; 
             border-color: var(--accent-color);
-            transform: translateY(-1px); 
+            transform: translateY(-1px);
         }
         .nav-active { 
             background: var(--primary-color) !important; 
             color: white !important; 
             border-color: var(--primary-color) !important; 
         }
-        @media (max-width: 680px) { header { flex-direction: column; gap: 15px; padding: 1rem; } header nav { width: 100%; justify-content: center; flex-wrap: wrap; } header nav button { flex: 1; min-width: 80px; text-align: center; } }
+        
+        @media (max-width: 680px) { 
+            header { flex-direction: column; gap: 15px; padding: 1rem; } 
+            header nav { width: 100%; justify-content: center; flex-wrap: wrap; } 
+            header nav button { flex: 1; min-width: 80px; text-align: center; } 
+        }
 
         /* Main */
         main { padding: 2rem; max-width: 1200px; margin: 0 auto; flex: 1; width: 100%; }
@@ -72,67 +85,75 @@
         .page-section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Footer (背景改淺色) */
+        /* Footer */
         footer { 
             background-color: var(--bg-color); 
             color: var(--secondary-color); 
             padding: 3rem 1rem; text-align: center; margin-top: auto; font-size: 0.9rem; 
-            border-top: 4px solid var(--accent-color); 
+            border-top: 3px solid var(--accent-color); 
         }
         .footer-content { max-width: 800px; margin: 0 auto; }
         .footer-source { margin-bottom: 15px; line-height: 1.8; }
         .footer-disclaimer { 
             background: rgba(252, 142, 87, 0.1); 
-            color: #d35400; /* 深橘色文字 */
+            color: #d35400; 
             display: inline-block; padding: 8px 15px; border-radius: 8px; 
             border: 1px solid var(--accent-color); 
             font-weight: bold; margin-top: 10px; 
         }
 
         /* Dashboard & Components */
-        .section-title { text-align: center; margin: 3rem 0 1.5rem 0; color: var(--primary-color); position: relative; }
-        .section-title::after { content: ''; display: block; width: 60px; height: 4px; background: var(--accent-color); margin: 10px auto 0; border-radius: 2px; }
-        
-        /* 卡片維持白色，但陰影和邊框微調 */
-        .card { 
-            background: white; 
-            padding: 1.5rem; border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(160, 106, 80, 0.1); 
-            margin-bottom: 2rem; overflow: hidden; 
-            border: 1px solid #f0e6d8;
+        .section-title { 
+            text-align: center; margin: 3rem 0 1.5rem 0; 
+            color: var(--primary-color); position: relative; 
+            font-weight: 800;
         }
+        .section-title::after { 
+            content: ''; display: block; width: 60px; height: 4px; 
+            background: var(--accent-color); margin: 10px auto 0; border-radius: 2px; 
+        }
+        
+        .card { 
+            background: white; padding: 1.5rem; border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(160, 106, 80, 0.08); 
+            margin-bottom: 2rem; overflow: hidden; 
+            border: 1px solid rgba(160, 106, 80, 0.1);
+        }
+        .card h3 { color: var(--primary-color); margin-top: 0; font-weight: 700; border-bottom: 2px solid #fdf2e9; padding-bottom: 10px; }
         .chart-container { position: relative; height: 350px; width: 100%; }
         
         /* 按鈕群組 */
-        .btn-group { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin: 1rem 0 3rem 0; }
+        .btn-group { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 1rem; }
         .big-btn { 
-            padding: 2rem; width: 250px; border: none; border-radius: 12px; cursor: pointer; 
-            color: white; font-weight: bold; font-size: 1.2rem; display: flex; flex-direction: column; align-items: center; transition: transform 0.2s; 
+            padding: 1.5rem; width: 220px; border: none; border-radius: 12px; cursor: pointer; 
+            color: white; font-weight: bold; font-size: 1.1rem; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s; 
             box-shadow: 0 4px 6px rgba(85, 67, 59, 0.2);
         }
         .big-btn:hover { transform: translateY(-5px); box-shadow: 0 8px 12px rgba(85, 67, 59, 0.3); }
         
-        /* 調整按鈕顏色以符合新色票 */
-        .btn-a { background: linear-gradient(135deg, #fc8e57, #ff7043); } /* 橘色系 */
-        .btn-b { background: linear-gradient(135deg, #a06a50, #8d5d45); } /* 紅褐色系 */
-        .btn-c { background: linear-gradient(135deg, #55433b, #3e302b); } /* 深褐色系 */
+        .btn-a { background: linear-gradient(135deg, #fc8e57, #e67e22); }
+        .btn-b { background: linear-gradient(135deg, #a06a50, #8d5d45); } 
+        .btn-c { background: linear-gradient(135deg, #55433b, #3e302b); }
         
         /* Search */
         .search-wrapper { margin: 2rem 0; text-align: center; width: 100%; }
         .search-input-lg { 
             width: 100%; max-width: 600px; padding: 15px 25px; font-size: 1.1rem; 
             border: 2px solid #e0e0e0; border-radius: 50px; outline: none; transition: 0.3s; 
-            background-color: white; color: var(--primary-color);
+            color: var(--primary-color);
         }
         .search-input-lg:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(252, 142, 87, 0.2); }
         
         /* Project Block */
         .project-block { 
             background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px; 
-            box-shadow: 0 2px 5px rgba(160, 106, 80, 0.1); transition: transform 0.2s; 
+            box-shadow: 0 2px 5px rgba(160, 106, 80, 0.1); 
+            transition: transform 0.2s; 
             display: grid; grid-template-columns: 1fr auto; gap: 15px; cursor: pointer; 
             border-left: 5px solid var(--accent-color);
-            border: 1px solid #f0e6d8; border-left-width: 5px;
+            border: 1px solid rgba(160, 106, 80, 0.1); border-left-width: 5px;
         }
         .project-block:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(160, 106, 80, 0.2); }
         .pb-info { display:flex; flex-direction:column; justify-content:center; min-width: 0; }
@@ -144,7 +165,7 @@
         .ranking-container { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
         .rank-column h3 { border-bottom: 2px solid #eee; padding-bottom: 10px; color: var(--primary-color); }
         .rank-group { margin-bottom: 30px; }
-        .rank-group h4 { margin: 10px 0; color: var(--secondary-color); font-size: 1rem; }
+        .rank-group h4 { margin: 10px 0; color: var(--secondary-color); font-size: 1rem; font-weight:bold; }
         .rank-list { list-style: none; padding: 0; }
         .rank-list li { padding: 12px; border-bottom: 1px dashed #eee; display: flex; justify-content: space-between; color: var(--primary-color); }
         .rank-idx { background: var(--accent-color); color: white; width: 24px; height: 24px; text-align: center; border-radius: 50%; display:inline-block; margin-right:5px;}
@@ -156,12 +177,12 @@
         .modal-content { background: white; width: 95%; max-width: 900px; max-height: 90vh; border-radius: 15px; padding: 0; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideUp 0.3s ease-out; position:relative; display: flex; flex-direction: column; }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
-        .modal-header-area { padding: 25px 25px 15px 25px; border-bottom: 1px solid #f0e6d8; position: relative; background: #fffcf5; }
+        .modal-header-area { padding: 25px 25px 15px 25px; border-bottom: 1px solid #eee; position: relative; background-color: #fffcf5; }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 2.5rem; cursor: pointer; color: var(--secondary-color); line-height: 0.8; z-index: 10; transition:0.2s; }
         .close-btn:hover { color: var(--accent-color); }
         
         /* Modal Tabs */
-        .modal-tabs { display: flex; background: #fdf2e9; border-bottom: 1px solid #e6dcc8; }
+        .modal-tabs { display: flex; background: #fdf2e9; border-bottom: 1px solid #ddd; }
         .modal-tab { flex: 1; text-align: center; padding: 15px; cursor: pointer; font-weight: bold; color: var(--secondary-color); border-bottom: 3px solid transparent; transition: 0.3s; }
         .modal-tab:hover { background: #fae5d3; }
         .modal-tab.active { color: var(--primary-color); border-bottom-color: var(--accent-color); background: white; }
@@ -170,22 +191,29 @@
         .tab-content { display: none; animation: fadeIn 0.3s; }
         .tab-content.active { display: block; }
 
-        /* Modal Charts Single Column */
         .modal-charts-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 20px; }
-        .mini-chart-box { text-align: center; background: #fff; padding: 15px; border: 1px solid #f0e6d8; border-radius: 8px; }
+        .mini-chart-box { text-align: center; background: #fff; padding: 15px; border: 1px solid #eee; border-radius: 8px; }
         
+        /* Toggle */
+        .desc-container { position: relative; max-height: 100px; overflow: hidden; transition: max-height 0.3s ease; }
+        .desc-container.expanded { max-height: none; }
+        .desc-gradient { position: absolute; bottom: 0; left: 0; width: 100%; height: 30px; background: linear-gradient(to bottom, rgba(253,242,233,0), rgba(253,242,233,1)); pointer-events: none; }
+        .desc-container.expanded .desc-gradient { display: none; }
+        .toggle-btn { display: block; width: 100%; text-align: center; padding: 8px; margin-top: 5px; background: #f0e6d8; border: none; border-radius: 5px; cursor: pointer; color: var(--primary-color); font-weight: bold; transition: 0.2s; }
+        .toggle-btn:hover { background: #e6dcc8; }
+
         /* Loading */
         .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,247,230,0.9); z-index: 999; justify-content: center; align-items: center; flex-direction: column; }
-        .spinner { border: 8px solid #e6dcc8; border-top: 8px solid var(--accent-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+        .spinner { border: 8px solid #f3f3f3; border-top: 8px solid var(--accent-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
         
         /* Table & Tags */
         .proposal-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.95rem; }
-        .proposal-table th, .proposal-table td { padding: 12px; text-align: left; border-bottom: 1px solid #f0e6d8; }
+        .proposal-table th, .proposal-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
         .proposal-table th { background-color: #fdf2e9; color: var(--primary-color); }
         .p-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; margin-right: 5px; color: white;}
         .p-cut { background: var(--danger-color); }
         .p-freeze { background: var(--warning-color); }
-        .jump-btn { background: linear-gradient(135deg, #fc8e57, #ff7043); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 0.95rem; margin-top: 10px; display: inline-flex; align-items: center; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .jump-btn { background: linear-gradient(135deg, #fc8e57, #e67e22); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 0.95rem; margin-top: 10px; display: inline-flex; align-items: center; transition: 0.3s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .jump-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
         .jump-btn::after { content: ' ➔'; margin-left: 5px; }
 
@@ -197,7 +225,7 @@
         .filter-tag.active { background: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 2px 5px rgba(85, 67, 59, 0.3); }
 
         .legislator-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 25px; margin-top: 20px; }
-        .leg-card { background: white; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 4px 10px rgba(160, 106, 80, 0.1); transition: 0.3s; display: flex; flex-direction: column; align-items: center; cursor: pointer; border: 1px solid #f0e6d8; }
+        .leg-card { background: white; border-radius: 15px; padding: 25px; text-align: center; box-shadow: 0 4px 10px rgba(160, 106, 80, 0.1); transition: 0.3s; display: flex; flex-direction: column; align-items: center; cursor: pointer; border: 1px solid rgba(160, 106, 80, 0.1); }
         .leg-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(160, 106, 80, 0.2); border-color: var(--accent-color); }
         .leg-avatar { width: 100px; height: 100px; border-radius: 50%; background-color: #fdf2e9; margin-bottom: 15px; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 3rem; overflow: hidden; background-size: cover; background-position: center; }
         .leg-name { font-size: 1.4rem; font-weight: bold; margin-bottom: 5px; color: var(--primary-color); }
@@ -213,7 +241,6 @@
         .stat-val { display: block; font-size: 1.2rem; font-weight: 800; color: #333; }
         .stat-label { font-size: 0.8rem; color: #888; }
 
-        /* Modal C Specific */
         .leg-modal-body { padding: 30px; overflow-y: auto; max-height: 90vh; }
         .leg-detail-header { text-align: center; margin-bottom: 30px; }
         .leg-detail-avatar { width: 120px; height: 120px; border-radius: 50%; background-color: #fdf2e9; margin: 0 auto 15px; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.15); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
@@ -253,27 +280,32 @@
                 </div>
             </div>
             <div class="modal-tabs">
-                <div class="modal-tab active" onclick="switchTab('plan')">📄 工作計畫內容</div>
-                <div class="modal-tab" onclick="switchTab('review')">⚖️ 審查刪減結果</div>
+                <div class="modal-tab active" onclick="switchTab('plan')">工作計畫內容</div>
+                <div class="modal-tab" onclick="switchTab('review')">審查刪減結果</div>
             </div>
             <div class="modal-body-area">
                 <div id="tab-content-plan" class="tab-content active">
                     <div style="background:#fdf2e9; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #f0e6d8;">
-                        <strong>📝 內容：</strong> <span id="u-desc"></span>
+                        <strong>內容：</strong>
+                        <div id="u-desc-container" class="desc-container">
+                            <span id="u-desc"></span>
+                            <div class="desc-gradient"></div>
+                        </div>
+                        <button id="toggle-desc-btn" class="toggle-btn" onclick="toggleDesc()">展開閱讀全文</button>
                     </div>
                     <div class="modal-charts-grid">
-                        <div class="mini-chart-box"><h4>📊 分支計畫</h4><div style="height:250px;"><canvas id="chartDetailBar"></canvas></div></div>
-                        <div class="mini-chart-box"><h4>🍰 用途比例</h4><div style="height:250px;"><canvas id="chartDetailPie"></canvas></div></div>
+                        <div class="mini-chart-box"><h4>分支計畫</h4><div style="height:250px;"><canvas id="chartDetailBar"></canvas></div></div>
+                        <div class="mini-chart-box"><h4>用途比例</h4><div style="height:250px;"><canvas id="chartDetailPie"></canvas></div></div>
                     </div>
                 </div>
                 <div id="tab-content-review" class="tab-content">
                     <div id="review-data-container">
                         <div class="modal-charts-grid">
-                            <div class="mini-chart-box"><h4>✂️ 最終審查結果比例</h4><div style="height:250px;"><canvas id="chartBResult"></canvas></div></div>
-                            <div class="mini-chart-box"><h4>⚖️ 三階段刪凍比較</h4><div style="height:250px;"><canvas id="chartBStages"></canvas></div></div>
+                            <div class="mini-chart-box"><h4>最終審查結果比例</h4><div style="height:250px;"><canvas id="chartBResult"></canvas></div></div>
+                            <div class="mini-chart-box"><h4>三階段刪凍比較</h4><div style="height:250px;"><canvas id="chartBStages"></canvas></div></div>
                         </div>
                         <div style="margin-top: 30px;">
-                            <h3 style="border-left: 5px solid var(--accent-color); padding-left: 10px;">📄 委員提案紀錄</h3>
+                            <h3 style="border-left: 5px solid var(--accent-color); padding-left: 10px;">委員提案紀錄</h3>
                             <div style="overflow-x: auto;">
                                 <table class="proposal-table">
                                     <thead><tr><th style="width:15%">提案委員</th><th style="width:20%">類別/金額</th><th>提案理由</th></tr></thead>
@@ -299,14 +331,14 @@
                     <h2 id="mc-name" style="color:var(--primary-color); margin-bottom:5px;"></h2>
                     <span id="mc-party" class="leg-party-tag"></span>
                 </div>
-                <h3 class="leg-detail-table-title title-cut">✂️ 刪減案提案紀錄</h3>
+                <h3 class="leg-detail-table-title title-cut">刪減案提案紀錄</h3>
                 <div style="overflow-x: auto;">
                     <table class="proposal-table">
                         <thead><tr><th style="width:30%">刪減項目</th><th style="width:20%">刪減金額/比例</th><th>刪減理由</th></tr></thead>
                         <tbody id="table-cut-c"></tbody>
                     </table>
                 </div>
-                <h3 class="leg-detail-table-title title-freeze">❄️ 凍結案提案紀錄</h3>
+                <h3 class="leg-detail-table-title title-freeze">凍結案提案紀錄</h3>
                 <div style="overflow-x: auto;">
                     <table class="proposal-table">
                         <thead><tr><th style="width:30%">凍結項目</th><th style="width:20%">凍結金額/比例</th><th>凍結理由</th></tr></thead>
@@ -318,7 +350,7 @@
     </div>
 
     <header>
-        <h1 onclick="showPage('home')">📊 中央政府總預算觀測站</h1>
+        <h1 onclick="showPage('home')">中央政府總預算觀測站</h1>
         <nav>
             <button id="nav-home" onclick="showPage('home')">首頁</button>
             <button id="nav-budget" onclick="showPage('page-budget')">預算審查</button>
@@ -332,29 +364,30 @@
                 <h2 style="text-align: center; margin-bottom: 2rem; color:var(--primary-color);">每一筆納稅錢，都值得被看見</h2>
             </div>
             
-            <div class="card">
+            <div class="card" style="padding-bottom: 2rem;">
                 <h3>總預算審查比例概況</h3>
-                <div style="height: 100px;"><canvas id="chartStatusB"></canvas></div>
-                <div style="text-align:center; font-size:0.9rem; color:#666; margin-top:10px;">說明：此圖表包含各工作計畫刪減與部會通案刪減之總和。</div>
-            </div>
-
-            <div class="btn-group">
-                <button class="big-btn btn-a" onclick="showPage('page-budget')">開始搜尋<br>預算與審查內容</button>
-                <button class="big-btn btn-c" onclick="showPage('page-legislator')">開始搜尋<br>立委把關紀錄</button>
+                <div style="height: 100px; margin-bottom: 2rem;"><canvas id="chartStatusB"></canvas></div>
+                <div style="text-align:center; font-size:0.9rem; color:#666; margin-bottom:1.5rem;">說明：此圖表包含各工作計畫刪減與部會通案刪減之總和。</div>
+                
+                <div class="btn-group" style="margin-top:0; border-top:1px solid #f0e6d8; padding-top:1.5rem;">
+                    <button class="big-btn btn-a" onclick="showPage('page-budget')">開始搜尋<br>預算與審查內容</button>
+                    <button class="big-btn btn-c" onclick="showPage('page-legislator')">開始搜尋<br>立委把關紀錄</button>
+                </div>
             </div>
 
             <div class="ranking-container">
                 <div class="card rank-column">
-                    <h3>🏛️ 部會機關 Top 5</h3>
-                    <div class="rank-group"><h4>✂️ 刪減金額最多</h4><ul class="rank-list" id="rank-dept-cut"></ul></div>
-                    <div class="rank-group"><h4>❄️ 凍結金額最多</h4><ul class="rank-list" id="rank-dept-freeze"></ul></div>
+                    <h3>部會機關 Top 5</h3>
+                    <div class="rank-group"><h4>刪減金額最多</h4><ul class="rank-list" id="rank-dept-cut"></ul></div>
+                    <div class="rank-group"><h4>凍結金額最多</h4><ul class="rank-list" id="rank-dept-freeze"></ul></div>
                 </div>
                 <div class="card rank-column">
-                    <h3>📋 工作計畫 Top 5</h3>
-                    <div class="rank-group"><h4>✂️ 刪減金額最多</h4><ul class="rank-list" id="rank-plan-cut"></ul></div>
-                    <div class="rank-group"><h4>❄️ 凍結金額最多</h4><ul class="rank-list" id="rank-plan-freeze"></ul></div>
+                    <h3>工作計畫 Top 5</h3>
+                    <div class="rank-group"><h4>刪減金額最多</h4><ul class="rank-list" id="rank-plan-cut"></ul></div>
+                    <div class="rank-group"><h4>凍結金額最多</h4><ul class="rank-list" id="rank-plan-freeze"></ul></div>
                 </div>
             </div>
+
             <div class="card">
                 <h3>歷年歲出預算比較</h3>
                 <div class="chart-container"><canvas id="chartYearly"></canvas></div>
@@ -366,13 +399,13 @@
         </section>
 
         <section id="page-budget" class="page-section">
-            <h2 class="section-title">🔎 預算計畫與審查結果搜尋</h2>
+            <h2 class="section-title">預算計畫與審查結果搜尋</h2>
             <div class="search-wrapper"><input type="text" class="search-input-lg" placeholder="輸入關鍵字 (如: 國防, 潛艦, 凍結...)" oninput="handleSearchBudget(this.value)"></div>
             <div id="results-container-budget"><p align="center" style="color:#666; padding:20px;">請輸入關鍵字開始搜尋...</p></div>
         </section>
 
         <section id="page-legislator" class="page-section">
-            <h2 class="section-title">⚖️ 立委把關紀錄</h2>
+            <h2 class="section-title">立委把關紀錄</h2>
             
             <div class="filter-wrapper">
                 <span style="font-weight:bold; color:var(--secondary-color);">依黨籍篩選：</span>
@@ -418,7 +451,7 @@
         });
 
         // =======================
-        // ★★★ 核心工具與渲染函式 (放置最前) ★★★
+        // ★★★ 核心工具與渲染函式 ★★★
         // =======================
 
         function parseMoney(str) {
@@ -535,6 +568,19 @@
                 html+=`<div class="leg-card" onclick="openDetailC('${rowStr}')"><div class="leg-avatar">${avatarHtml}</div><div class="leg-name">${name}</div><span class="leg-party-tag ${partyClass}">${party}</span><div class="leg-stats-box"><div class="stat-item"><span class="stat-val" style="color:var(--danger-color);">${row['刪減案數']||0}</span><span class="stat-label">刪減案</span></div><div class="stat-item"><span class="stat-val" style="color:var(--warning-color);">${row['凍結案數']||0}</span><span class="stat-label">凍結案</span></div><div class="stat-item"><span class="stat-val" style="color:var(--primary-color);">${row['主決議數']||0}</span><span class="stat-label">主決議</span></div></div></div>`
             });
             container.innerHTML = html;
+        }
+
+        // ★★★ 收合功能 ★★★
+        function toggleDesc() {
+            const container = document.getElementById('u-desc-container');
+            const btn = document.getElementById('toggle-desc-btn');
+            if (container.classList.contains('expanded')) {
+                container.classList.remove('expanded');
+                btn.innerText = '展開閱讀全文';
+            } else {
+                container.classList.add('expanded');
+                btn.innerText = '收合內容';
+            }
         }
 
         // =======================
@@ -655,6 +701,11 @@
             // Tab A (Plan)
             if (planData) {
                 document.getElementById('u-desc').innerText = planData['工作內容'] || '無';
+                
+                // 重置收合狀態
+                document.getElementById('u-desc-container').classList.remove('expanded');
+                document.getElementById('toggle-desc-btn').innerText = '展開閱讀全文';
+
                 if(chartBarA) chartBarA.destroy(); if(chartPieA) chartPieA.destroy();
                 renderDetailChartsA(planData);
             } else { document.getElementById('u-desc').innerText = '此計畫無詳細編列內容資料。'; }
@@ -745,7 +796,37 @@
             chartB2=new Chart(ctx2,{type:'bar',data:{labels:['委員會','黨團協商','院會'],datasets:[{label:'刪減',data:[cCut,nCut,fCut],backgroundColor:'#e74c3c'},{label:'凍結',data:[cFreeze,nFreeze,fFreeze],backgroundColor:'#f1c40f'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:tooltipCurrencyCallback}}});
         }
 
-        function renderMainCharts(){if(mainChartsRendered)return;new Chart(document.getElementById('chartYearly').getContext('2d'),{type:'bar',data:{labels:['115年度','114年度','113年度','112年度','111年度','110年度','109年度','108年度','107年度','106年度'],datasets:[{label:'歲出總額',data:[3034974371000,3132468909000,2881782095000,2719098790000,2262064189000,2161517070000,2102196982000,2022029637000,1991773071000,1997995520000],backgroundColor:'#3498db'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:tooltipCurrencyCallback}}});new Chart(document.getElementById('chartAllocation').getContext('2d'),{type:'bar',data:{labels:['115年度預算結構'],datasets:[{label:'社會福利',data:[831800000000],backgroundColor:'#ff6384'},{label:'教育科學文化',data:[556600000000],backgroundColor:'#36a2eb'},{label:'國防',data:[548800000000],backgroundColor:'#4bc0c0'},{label:'經濟發展',data:[427500000000],backgroundColor:'#ff9f40'},{label:'一般政務',data:[302600000000],backgroundColor:'#9966ff'},{label:'退休撫卹',data:[184400000000],backgroundColor:'#e74c3c'},{label:'債務還本付息',data:[106300000000],backgroundColor:'#f1c40f'},{label:'補助及其他',data:[50400000000],backgroundColor:'#2ecc71'},{label:'社區發展及環境保護',data:[26600000000],backgroundColor:'#34495e'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,display:false},y:{stacked:true,display:false}},plugins:{tooltip:tooltipCurrencyCallback}}});mainChartsRendered=true}
+        function renderMainCharts(){
+            if(mainChartsRendered)return;
+            
+            // Y軸中文單位
+            new Chart(document.getElementById('chartYearly').getContext('2d'),{
+                type:'bar',
+                data:{
+                    labels:['115年度','114年度','113年度','112年度','111年度','110年度','109年度','108年度','107年度','106年度'],
+                    datasets:[{
+                        label:'歲出總額',
+                        data:[3034974371000,3132468909000,2881782095000,2719098790000,2262064189000,2161517070000,2102196982000,2022029637000,1991773071000,1997995520000],
+                        backgroundColor:'#3498db'
+                    }]
+                },
+                options:{
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    plugins:{ tooltip: tooltipCurrencyCallback },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) { return formatCurrency(value); } 
+                            }
+                        }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('chartAllocation').getContext('2d'),{type:'bar',data:{labels:['115年度預算結構'],datasets:[{label:'社會福利',data:[831800000000],backgroundColor:'#ff6384'},{label:'教育科學文化',data:[556600000000],backgroundColor:'#36a2eb'},{label:'國防',data:[548800000000],backgroundColor:'#4bc0c0'},{label:'經濟發展',data:[427500000000],backgroundColor:'#ff9f40'},{label:'一般政務',data:[302600000000],backgroundColor:'#9966ff'},{label:'退休撫卹',data:[184400000000],backgroundColor:'#e74c3c'},{label:'債務還本付息',data:[106300000000],backgroundColor:'#f1c40f'},{label:'補助及其他',data:[50400000000],backgroundColor:'#2ecc71'},{label:'社區發展及環境保護',data:[26600000000],backgroundColor:'#34495e'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,display:false},y:{stacked:true,display:false}},plugins:{tooltip:tooltipCurrencyCallback}}});
+            mainChartsRendered=true;
+        }
     </script>
 </body>
 </html>
