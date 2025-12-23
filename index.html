@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (GAS穩定版)</title>
+    <title>中央政府總預算觀測站 (樣式回歸與連線修復版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -11,18 +11,21 @@
     <style>
         /* --- 基礎設定 (v56 現代高對比配色) --- */
         :root {
-            --bg-color: #F8F8F8;       /* 背景底色 */
-            --primary-color: #070707;  /* 主要文字 */
-            --secondary-color: #086788;/* 深藍綠 */
-            --accent-color: #F0C808;   /* 鮮明黃 */
-            --highlight-color: #A6DAEE;/* 天藍色 */
+            /* 指定配色 */
+            --bg-color: #F8F8F8;       /* 背景底色 (極淺灰) */
+            --primary-color: #070707;  /* 主要文字 (幾近純黑) */
+            --secondary-color: #086788;/* 深藍綠 (主要強調/標題裝飾/通過) */
+            --accent-color: #F0C808;   /* 鮮明黃 (亮點/凍結/強調邊框) */
+            --highlight-color: #A6DAEE;/* 天藍色 (Hover/次要) */
             
-            --danger-color: #E74C3C;   
-            --warning-color: var(--accent-color); 
-            --success-color: var(--secondary-color);
-            --card-bg: #FFFFFF;        
-            --border-color: #e0e0e0;   
+            /* 功能性顏色 (鮮明化) */
+            --danger-color: #E74C3C;   /* 亮紅色 (刪減) */
+            --warning-color: var(--accent-color); /* 使用鮮明黃 (凍結) */
+            --success-color: var(--secondary-color); /* 使用深藍綠 (通過) */
+            --card-bg: #FFFFFF;        /* 卡片白底 */
+            --border-color: #e0e0e0;   /* 淺灰邊框 */
             
+            /* 政黨代表色 */
             --party-kmt: #000095;
             --party-dpp: #1b9431;
             --party-tpp: #28c7c7;
@@ -297,8 +300,7 @@
     <div id="error-display" class="loading-overlay" style="display:none;">
         <div class="error-message">
             <h3>⚠️ 資料讀取失敗</h3>
-            <p>無法連線至資料庫，可能是因為網路安全設定阻擋。</p>
-            <p><strong>請嘗試：</strong> 使用 "Live Server" 開啟，或檢查網路連線。</p>
+            <p>無法連線至資料庫，請檢查您的 Google Apps Script 部署網址是否正確，權限是否設為「所有人」。</p>
         </div>
     </div>
 
@@ -476,8 +478,8 @@
     </footer>
 
     <script>
-        // ★★★ 替換成你的 Google Apps Script 網址 ★★★
-        const YOUR_GAS_URL = 'https://script.google.com/macros/s/AKfycbzG55TUuaKpgD9dqG8clvDJ0iXwtDtZHNAbHJ_t9mWPNAzYdNyf2pvkT3XvDJRUOX7L/exec'; // 範例，請換成你自己的
+        // ★★★ 請務必在此填入您正確的 GAS 網址 ★★★
+        const YOUR_GAS_URL = 'https://script.google.com/macros/s/AKfycbx9zsgAufhC0P94sHbx3EqMjnGdjB0GGBoDBZIoD4VJSe5RrMio5TLfDYL9Q5uqrSWy/exec'; 
 
         // 設定資料來源 (透過 GAS 轉發)
         const dataSources = {
@@ -676,14 +678,18 @@
             const loader = document.getElementById('loader');
             const errorDisplay = document.getElementById('error-display');
             
-            // 定義要嘗試的代理服務列表 (優先順序)
-            // 優先使用 GAS (最穩定)，若未設定則使用 Mock Data
+            // 這裡改成從 dataSources 讀取 URL
             let targetUrl = dataSources[pageId];
 
-            if (!targetUrl) { 
-                if(pageId === 'page-a') targetUrl = dataSources['page-a'];
-                else if(pageId === 'page-b') targetUrl = dataSources['page-b'];
-                else return []; 
+            // 確保 targetUrl 有值，否則使用 Mock Data
+            if (!targetUrl || targetUrl.trim() === '') {
+                 console.warn(`[${pageId}] No GAS URL provided, using Mock Data.`);
+                 isDemoMode = true;
+                 let mockData = [];
+                 if (pageId === 'page-a') { mockData = MOCK_DATA_A; allDataPageA = mockData; }
+                 else if (pageId === 'page-b') { mockData = MOCK_DATA_B; allDataPageB = mockData; processPageBData(mockData); }
+                 else if (pageId === 'page-c') { mockData = MOCK_DATA_C; allDataPageC = mockData; filterLegislators('all'); }
+                 return mockData;
             }
 
             if (!silent) loader.style.display = 'flex';
@@ -731,6 +737,12 @@
                     loader.style.display = 'none';
                     document.querySelectorAll('.demo-mode-badge').forEach(el => el.style.display = 'block');
                 }
+                
+                // 如果是第一次載入失敗，顯示錯誤提示 (可選)
+                if (errorDisplay && !silent && !isDemoMode) {
+                   // errorDisplay.style.display = 'flex'; // 可以選擇顯示或不顯示，因為已經有 Mock Data 了
+                }
+
                 return mockData;
             }
         }
