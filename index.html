@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v81 最終補完版)</title>
+    <title>中央政府總預算觀測站 (v82 排行榜手機單欄版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -189,6 +189,23 @@
         .jump-btn:hover { transform: translateY(-2px); box-shadow: 3px 3px 8px rgba(0,0,0,0.3); background-color: #0a7ea6; }
         .jump-btn::after { content: ' ➔'; margin-left: 5px; }
 
+        @media (max-width: 768px) {
+            main { padding: 1rem; }
+            .btn-group { flex-direction: column; gap: 15px; }
+            .big-btn { width: 100%; }
+            .chart-container { height: 250px; }
+            /* ★★★ 關鍵：手機版排行榜改為單欄 ★★★ */
+            .ranking-container { grid-template-columns: 1fr; gap: 20px; }
+            .modal-charts-grid { grid-template-columns: 1fr; }
+            .search-input-lg { font-size: 16px; padding: 12px 20px; }
+            .project-block { grid-template-columns: 1fr; gap: 10px; border-left-width: 6px; }
+            .pb-amount { text-align: left; margin-left: 0; font-size: 1.3rem; }
+            .legislator-grid { grid-template-columns: 1fr; }
+            .leg-modal-body { padding: 20px; }
+            .bill-container { padding: 5% 10%; border-width: 1px; }
+            .modal-header-area { padding: 20px; }
+            .modal-body-area { padding: 20px; }
+        }
     </style>
 </head>
 <body>
@@ -882,6 +899,7 @@
             document.getElementById('u-dept').innerText = baseData['主管機關'];
             document.getElementById('u-amount').innerText = formatCurrency(parseMoney(baseData['預算金額']));
             
+            // Tab A (Plan)
             if (planData) {
                 document.getElementById('u-desc').innerText = planData['工作內容'] || '無';
                 document.getElementById('u-desc-container').classList.remove('expanded');
@@ -890,6 +908,7 @@
                 renderDetailChartsA(planData);
             } else { document.getElementById('u-desc').innerText = '此計畫無詳細編列內容資料。'; }
             
+            // Tab B (Review)
             const reviewContainer = document.getElementById('review-data-container');
             const reviewNoData = document.getElementById('review-no-data');
             if (reviewData) {
