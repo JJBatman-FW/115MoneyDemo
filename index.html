@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v82 排行榜手機單欄版)</title>
+    <title>中央政府總預算觀測站 (v83 手機精準修正版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -194,7 +194,6 @@
             .btn-group { flex-direction: column; gap: 15px; }
             .big-btn { width: 100%; }
             .chart-container { height: 250px; }
-            /* ★★★ 關鍵：手機版排行榜改為單欄 ★★★ */
             .ranking-container { grid-template-columns: 1fr; gap: 20px; }
             .modal-charts-grid { grid-template-columns: 1fr; }
             .search-input-lg { font-size: 16px; padding: 12px 20px; }
@@ -737,25 +736,37 @@
                 // ★★★ 繪製指引線 ★★★
                 if (!chartAllocationInstance) return;
                 
-                // 1. 取得該 dataset 在圖表中的 meta 資訊
-                const meta = chartAllocationInstance.getDatasetMeta(index);
-                const bar = meta.data[0]; // 因為只有一條橫條，所以取第0個元素
+                // 1. 同步 SVG 座標系與 Chart 內部座標系 (這步最關鍵，解決手機解析度問題)
+                const chart = chartAllocationInstance;
+                const svg = document.getElementById('pointer-layer');
+                svg.setAttribute('viewBox', `0 0 ${chart.width} ${chart.height}`);
+                
+                // 2. 取得目標 Bar 的座標
+                const meta = chart.getDatasetMeta(index);
+                const bar = meta.data[0]; 
                 
                 if (bar) {
-                    // 2. 取得色塊的 X 軸中心點 (bar.x 是終點, bar.base 是起點)
-                    const segmentCenterX = (bar.x + bar.base) / 2;
-                    const segmentTopY = bar.y - (bar.height / 2); // 色塊頂端
+                    const targetX = (bar.x + bar.base) / 2;
+                    const targetY = bar.y - (bar.height / 2); // Bar 的頂端
 
-                    // 3. 取得 Info Box 的位置
-                    // 注意：因為 Info Box 是置中的，我們假設它的 "出發點" 是中心偏下
-                    // 為了簡化，我們讓線條從 Info Box 的正下方射出
-                    const containerWidth = document.querySelector('.bill-container').offsetWidth;
-                    const boxCenterX = containerWidth / 2;
-                    const boxBottomY = (document.querySelector('.bill-container').offsetHeight / 2) + 25; // 大約在 box 下緣
+                    // 3. 取得 Info Box 的座標 (DOM 座標 -> 轉換為 Chart 內部座標)
+                    const containerRect = document.querySelector('.bill-container').getBoundingClientRect();
+                    const infoBoxRect = document.getElementById('bill-info-overlay').getBoundingClientRect();
+                    
+                    // 計算相對位置 (DOM 像素)
+                    const boxLeftRel = infoBoxRect.left - containerRect.left;
+                    const boxTopRel = infoBoxRect.top - containerRect.top;
+                    
+                    // 計算比例尺 (Chart 內部像素 / DOM 顯示像素)
+                    const scaleX = chart.width / containerRect.width;
+                    const scaleY = chart.height / containerRect.height;
+                    
+                    // 轉換 Info Box 座標到 Chart 座標系
+                    const startX = (boxLeftRel + (infoBoxRect.width / 2)) * scaleX;
+                    const startY = (boxTopRel + infoBoxRect.height) * scaleY; // 從 Box 底部出發
 
                     // 4. 畫線 (SVG Path)
-                    // M = Move to (Box Bottom), L = Line to (Segment Top)
-                    const pathData = `M ${boxCenterX} ${boxBottomY} L ${segmentCenterX} ${segmentTopY + 10}`;
+                    const pathData = `M ${startX} ${startY} L ${targetX} ${targetY}`;
                     arrowLine.setAttribute('d', pathData);
                     arrowLine.style.opacity = '1';
                 }
@@ -799,6 +810,12 @@
                     document.querySelectorAll('.demo-mode-badge').forEach(el => el.style.display = 'block');
                 }
             });
+        });
+
+        // 監聽視窗大小改變，重置指引線
+        window.addEventListener('resize', () => {
+            const arrowLine = document.getElementById('dynamic-arrow');
+            if(arrowLine) arrowLine.style.opacity = '0';
         });
 
         function parseQueryResponse(jsonData) {
@@ -899,7 +916,6 @@
             document.getElementById('u-dept').innerText = baseData['主管機關'];
             document.getElementById('u-amount').innerText = formatCurrency(parseMoney(baseData['預算金額']));
             
-            // Tab A (Plan)
             if (planData) {
                 document.getElementById('u-desc').innerText = planData['工作內容'] || '無';
                 document.getElementById('u-desc-container').classList.remove('expanded');
@@ -908,7 +924,6 @@
                 renderDetailChartsA(planData);
             } else { document.getElementById('u-desc').innerText = '此計畫無詳細編列內容資料。'; }
             
-            // Tab B (Review)
             const reviewContainer = document.getElementById('review-data-container');
             const reviewNoData = document.getElementById('review-no-data');
             if (reviewData) {
