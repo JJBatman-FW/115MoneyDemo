@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v80 指引線互動版)</title>
+    <title>中央政府總預算觀測站 (v81 最終補完版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -52,11 +52,11 @@
         .bill-container { position: relative; width: 100%; aspect-ratio: 16 / 7; background-image: url('1000.png'); background-size: 100% 100%; background-position: center; background-repeat: no-repeat; border-radius: 8px; box-shadow: 0 6px 15px rgba(0,0,0,0.1); padding: 0; overflow: hidden; border: 2px solid var(--secondary-color); box-sizing: border-box; }
         .bill-container canvas { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; display: block; z-index: 1; }
         
-        /* ★★★ SVG 指引線層 ★★★ */
+        /* SVG 指引線層 */
         .bill-svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
         .bill-arrow-line { stroke: var(--secondary-color); stroke-width: 3; fill: none; filter: drop-shadow(0px 1px 2px rgba(255,255,255,0.8)); transition: all 0.3s; }
 
-        /* ★★★ 資訊看板 ★★★ */
+        /* 資訊看板 */
         .bill-info-overlay {
             position: absolute;
             top: 50%;
@@ -512,6 +512,7 @@
 
                 const rowStr = encodeURIComponent(JSON.stringify(row));
                 
+                // ★★★ object-position: center 25% 已套用 ★★★
                 html += `
                 <div class="leg-card" onclick="openDetailC('${rowStr}')">
                     <div class="leg-avatar" id="avatar-${name}" style="position:relative; overflow:hidden;">
@@ -531,6 +532,219 @@
                 </div>`;
             });
             container.innerHTML = html;
+        }
+
+        // ★★★ 關鍵修復：補回 renderProposalTable 函式 ★★★
+        function renderProposalTable(row){
+            const tbody=document.getElementById('proposal-table-body');
+            tbody.innerHTML='';
+            const proposalStr=row['提案紀錄']||'';
+            if(!proposalStr){tbody.innerHTML='<tr><td colspan="3" style="text-align:center">暫無詳細提案資料</td></tr>';return}
+            proposalStr.split('|').forEach(p=>{
+                const parts=p.split(':');
+                if(parts.length>=3){
+                    const typeClass=parts[1].includes('刪')?'p-cut':'p-freeze';
+                    const legName=parts[0].trim();
+                    const nameHtml=`<span class="clickable-link" onclick="jumpToC('${legName}')">${legName}</span>`;
+                    tbody.innerHTML+=`<tr><td><strong>${nameHtml}</strong></td><td><span class="p-tag ${typeClass}">${parts[1]}</span></td><td>${parts[2]}</td></tr>`
+                }
+            })
+        }
+
+        function renderLegislatorTables(detailStr) {
+            const tableCut = document.getElementById('table-cut-c');
+            const tableFreeze = document.getElementById('table-freeze-c');
+            tableCut.innerHTML = ''; tableFreeze.innerHTML = '';
+            if(!detailStr) {
+                const emptyRow = '<tr><td colspan="3" style="text-align:center; color:#999;">無詳細資料</td></tr>';
+                tableCut.innerHTML = emptyRow; tableFreeze.innerHTML = emptyRow; return;
+            }
+            const items = detailStr.split('|');
+            let hasCut = false, hasFreeze = false;
+            items.forEach(item => {
+                const parts = item.split('#');
+                if(parts.length >= 4) {
+                    const type = parts[0].trim();
+                    const projectId = parts[4] ? parts[4].trim() : '';
+                    let nameHtml = parts[1].trim();
+                    if(projectId) {
+                        nameHtml = `<span class="clickable-link" onclick="jumpToProjectB('${projectId}')">${nameHtml}</span>`;
+                    }
+                    const rowHtml = `<tr><td>${nameHtml}</td><td>${parts[2].trim()}</td><td>${parts[3].trim()}</td></tr>`;
+                    if(type.includes('刪')) { tableCut.innerHTML += rowHtml; hasCut = true; } 
+                    else if(type.includes('凍')) { tableFreeze.innerHTML += rowHtml; hasFreeze = true; }
+                }
+            });
+            if(!hasCut) tableCut.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#999;">無刪減提案</td></tr>';
+            if(!hasFreeze) tableFreeze.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#999;">無凍結提案</td></tr>';
+        }
+
+        function openDetailC(str) {
+            const row = JSON.parse(decodeURIComponent(str));
+            const modal = document.getElementById('detailModalC');
+            const name = row['委員姓名'];
+            
+            document.getElementById('mc-name').innerText = name;
+            document.getElementById('mc-party').innerText = row['黨籍'];
+            
+            let partyClass = 'tag-other';
+            const party = row['黨籍'] || '';
+            if(party.includes('民進')) partyClass='tag-dpp';
+            else if(party.includes('國民')) partyClass='tag-kmt';
+            else if(party.includes('民眾')) partyClass='tag-tpp';
+            else if(party.includes('時代')) partyClass='tag-npp';
+            document.getElementById('mc-party').className = `leg-party-tag ${partyClass}`;
+            
+            const photoPath = `./photos/${name}.jpg`;
+            const avatarDiv = document.getElementById('mc-avatar');
+            
+            // ★★★ object-position: center 25% 已套用 ★★★
+            avatarDiv.innerHTML = `
+                <span class="default-icon" style="z-index:1;">🧑‍💼</span>
+                <img src="${photoPath}" 
+                     style="width:100%; height:100%; object-fit:cover; object-position: center 25%; display:none; border-radius:50%;" 
+                     onload="this.style.display='block'; this.previousElementSibling.style.display='none';"
+                     onerror="this.style.display='none';">
+            `;
+            avatarDiv.style.backgroundImage = 'none';
+            avatarDiv.style.overflow = 'hidden'; 
+            avatarDiv.style.position = 'relative';
+
+            setTimeout(() => {
+                const legBody = document.querySelector('#detailModalC .leg-modal-body');
+                if (legBody) legBody.scrollTop = 0;
+            }, 0);
+            
+            renderLegislatorTables(row['提案明細'] || '');
+            modal.style.display = 'flex';
+        }
+
+        // ★★★ 更新後的 renderMainCharts (互動圖例 + SVG 指引線) ★★★
+        function renderMainCharts(){
+            if(mainChartsRendered) return;
+            
+            new Chart(document.getElementById('chartYearly').getContext('2d'),{
+                type:'bar',
+                data:{
+                    labels:['115年度','114年度','113年度','112年度','111年度','110年度','109年度','108年度','107年度','106年度'],
+                    datasets:[{
+                        label:'歲出總額',
+                        data:[3034974371000,3132468909000,2881782095000,2719098790000,2262064189000,2161517070000,2102196982000,2022029637000,1991773071000,1997995520000],
+                        backgroundColor:'#086788'
+                    }]
+                },
+                options:{
+                    responsive:true, maintainAspectRatio:false,
+                    plugins:{ tooltip: tooltipCurrencyCallback },
+                    scales: { y: { ticks: { callback: function(value) { return formatCurrency(value); } } } }
+                }
+            });
+
+            // 預算詳細資料 (用於點擊圖例後的顯示)
+            const budgetDetails = [
+                { label:'社會福利', value:831800000000, color:'rgba(231, 76, 60, 0.5)', arrow:'▲', display:'8318億' },
+                { label:'教育科學文化', value:556600000000, color:'rgba(240, 200, 8, 0.5)', arrow:'▼', display:'5566億' },
+                { label:'國防', value:548800000000, color:'rgba(8, 103, 136, 0.5)', arrow:'▲', display:'5488億' },
+                { label:'經濟發展', value:427500000000, color:'rgba(46, 204, 113, 0.5)', arrow:'▲', display:'4275億' },
+                { label:'一般政務', value:302600000000, color:'rgba(155, 89, 182, 0.5)', arrow:'▲', display:'3026億' },
+                { label:'退休撫卹', value:184400000000, color:'rgba(52, 152, 219, 0.5)', arrow:'▲', display:'1844億' },
+                { label:'債務還本付息', value:106300000000, color:'rgba(230, 126, 34, 0.5)', arrow:'–', display:'1063億' },
+                { label:'補助及其他', value:50400000000, color:'rgba(26, 188, 156, 0.5)', arrow:'▼', display:'504億' },
+                { label:'社區發展及環境保護', value:26600000000, color:'rgba(52, 73, 94, 0.5)', arrow:'▼', display:'266億' }
+            ];
+
+            const ctx = document.getElementById('chartAllocation').getContext('2d');
+            const totalBudget = budgetDetails.reduce((acc, curr) => acc + curr.value, 0);
+
+            // Chart Config - 關閉 Tooltip，改用外部控制
+            chartAllocationInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['115年度預算結構'],
+                    datasets: budgetDetails.map(d => ({
+                        label: d.label,
+                        data: [d.value],
+                        backgroundColor: d.color,
+                        barPercentage: 1.0,
+                        categoryPercentage: 1.0
+                    }))
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        x: { stacked: true, display: false, min: 0, max: totalBudget },
+                        y: { stacked: true, display: false }
+                    },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { enabled: false } // 關閉預設 Tooltip
+                    },
+                    layout: { padding: 0 }
+                }
+            });
+            
+            // 產生互動式圖例
+            const legendContainer = document.getElementById('chartAllocationLegend');
+            const infoOverlay = document.getElementById('bill-info-overlay');
+            const arrowLine = document.getElementById('dynamic-arrow');
+            
+            if(legendContainer) {
+                let legendHtml = '';
+                budgetDetails.forEach((ds, index) => {
+                    let color = ds.color.replace('0.5', '1'); 
+                    legendHtml += `
+                        <div class="legend-item" onclick="updateBillOverlay(${index}, '${ds.label}', '${ds.display}', '${ds.arrow}')">
+                            <div class="legend-color-box" style="background-color:${color}; border:none;"></div>
+                            <span>${ds.label}</span>
+                        </div>
+                    `;
+                });
+                legendContainer.innerHTML = legendHtml;
+            }
+
+            // 定義更新 overlay 的函式
+            window.updateBillOverlay = function(index, label, display, arrow) {
+                // 更新文字
+                infoOverlay.innerHTML = `
+                    <p class="bill-info-text">${label} ${display} (${arrow})</p>
+                `;
+                
+                // 更新圖例 Active 狀態
+                document.querySelectorAll('.legend-item').forEach((el, i) => {
+                    if (i === index) el.classList.add('active');
+                    else el.classList.remove('active');
+                });
+
+                // ★★★ 繪製指引線 ★★★
+                if (!chartAllocationInstance) return;
+                
+                // 1. 取得該 dataset 在圖表中的 meta 資訊
+                const meta = chartAllocationInstance.getDatasetMeta(index);
+                const bar = meta.data[0]; // 因為只有一條橫條，所以取第0個元素
+                
+                if (bar) {
+                    // 2. 取得色塊的 X 軸中心點 (bar.x 是終點, bar.base 是起點)
+                    const segmentCenterX = (bar.x + bar.base) / 2;
+                    const segmentTopY = bar.y - (bar.height / 2); // 色塊頂端
+
+                    // 3. 取得 Info Box 的位置
+                    // 注意：因為 Info Box 是置中的，我們假設它的 "出發點" 是中心偏下
+                    // 為了簡化，我們讓線條從 Info Box 的正下方射出
+                    const containerWidth = document.querySelector('.bill-container').offsetWidth;
+                    const boxCenterX = containerWidth / 2;
+                    const boxBottomY = (document.querySelector('.bill-container').offsetHeight / 2) + 25; // 大約在 box 下緣
+
+                    // 4. 畫線 (SVG Path)
+                    // M = Move to (Box Bottom), L = Line to (Segment Top)
+                    const pathData = `M ${boxCenterX} ${boxBottomY} L ${segmentCenterX} ${segmentTopY + 10}`;
+                    arrowLine.setAttribute('d', pathData);
+                    arrowLine.style.opacity = '1';
+                }
+            };
+            
+            mainChartsRendered=true;
         }
 
         function showPage(pageId) {
@@ -764,177 +978,6 @@
             const cCut=parseMoney(row['委員會刪減']);const cFreeze=parseMoney(row['委員會凍結']);const nCut=parseMoney(row['協商刪減']);const nFreeze=parseMoney(row['協商凍結']);const fCut=parseMoney(row['院會刪減']);const fFreeze=parseMoney(row['院會凍結']);
             const ctx2=document.getElementById('chartBStages').getContext('2d');
             chartB2=new Chart(ctx2,{type:'bar',data:{labels:['委員會','黨團協商','院會'],datasets:[{label:'刪減',data:[cCut,nCut,fCut],backgroundColor:'#E74C3C'},{label:'凍結',data:[cFreeze,nFreeze,fFreeze],backgroundColor:'#F0C808'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:tooltipCurrencyCallback}}});
-        }
-
-        function openDetailC(str) {
-            const row = JSON.parse(decodeURIComponent(str));
-            const modal = document.getElementById('detailModalC');
-            const name = row['委員姓名'];
-            
-            document.getElementById('mc-name').innerText = name;
-            document.getElementById('mc-party').innerText = row['黨籍'];
-            
-            let partyClass = 'tag-other';
-            const party = row['黨籍'] || '';
-            if(party.includes('民進')) partyClass='tag-dpp';
-            else if(party.includes('國民')) partyClass='tag-kmt';
-            else if(party.includes('民眾')) partyClass='tag-tpp';
-            else if(party.includes('時代')) partyClass='tag-npp';
-            document.getElementById('mc-party').className = `leg-party-tag ${partyClass}`;
-            
-            const photoPath = `./photos/${name}.jpg`;
-            const avatarDiv = document.getElementById('mc-avatar');
-            
-            // ★★★ object-position: center 25% 已套用 ★★★
-            avatarDiv.innerHTML = `
-                <span class="default-icon" style="z-index:1;">🧑‍💼</span>
-                <img src="${photoPath}" 
-                     style="width:100%; height:100%; object-fit:cover; object-position: center 25%; display:none; border-radius:50%;" 
-                     onload="this.style.display='block'; this.previousElementSibling.style.display='none';"
-                     onerror="this.style.display='none';">
-            `;
-            avatarDiv.style.backgroundImage = 'none';
-            avatarDiv.style.overflow = 'hidden'; 
-            avatarDiv.style.position = 'relative';
-
-            setTimeout(() => {
-                const legBody = document.querySelector('#detailModalC .leg-modal-body');
-                if (legBody) legBody.scrollTop = 0;
-            }, 0);
-            
-            renderLegislatorTables(row['提案明細'] || '');
-            modal.style.display = 'flex';
-        }
-
-        // ★★★ 更新後的 renderMainCharts (互動圖例 + SVG 指引線) ★★★
-        function renderMainCharts(){
-            if(mainChartsRendered) return;
-            
-            new Chart(document.getElementById('chartYearly').getContext('2d'),{
-                type:'bar',
-                data:{
-                    labels:['115年度','114年度','113年度','112年度','111年度','110年度','109年度','108年度','107年度','106年度'],
-                    datasets:[{
-                        label:'歲出總額',
-                        data:[3034974371000,3132468909000,2881782095000,2719098790000,2262064189000,2161517070000,2102196982000,2022029637000,1991773071000,1997995520000],
-                        backgroundColor:'#086788'
-                    }]
-                },
-                options:{
-                    responsive:true, maintainAspectRatio:false,
-                    plugins:{ tooltip: tooltipCurrencyCallback },
-                    scales: { y: { ticks: { callback: function(value) { return formatCurrency(value); } } } }
-                }
-            });
-
-            // 預算詳細資料 (用於點擊圖例後的顯示)
-            const budgetDetails = [
-                { label:'社會福利', value:831800000000, color:'rgba(231, 76, 60, 0.5)', arrow:'▲', display:'8318億' },
-                { label:'教育科學文化', value:556600000000, color:'rgba(240, 200, 8, 0.5)', arrow:'▼', display:'5566億' },
-                { label:'國防', value:548800000000, color:'rgba(8, 103, 136, 0.5)', arrow:'▲', display:'5488億' },
-                { label:'經濟發展', value:427500000000, color:'rgba(46, 204, 113, 0.5)', arrow:'▲', display:'4275億' },
-                { label:'一般政務', value:302600000000, color:'rgba(155, 89, 182, 0.5)', arrow:'▲', display:'3026億' },
-                { label:'退休撫卹', value:184400000000, color:'rgba(52, 152, 219, 0.5)', arrow:'▲', display:'1844億' },
-                { label:'債務還本付息', value:106300000000, color:'rgba(230, 126, 34, 0.5)', arrow:'–', display:'1063億' },
-                { label:'補助及其他', value:50400000000, color:'rgba(26, 188, 156, 0.5)', arrow:'▼', display:'504億' },
-                { label:'社區發展及環境保護', value:26600000000, color:'rgba(52, 73, 94, 0.5)', arrow:'▼', display:'266億' }
-            ];
-
-            const ctx = document.getElementById('chartAllocation').getContext('2d');
-            const totalBudget = budgetDetails.reduce((acc, curr) => acc + curr.value, 0);
-
-            // Chart Config - 關閉 Tooltip，改用外部控制
-            chartAllocationInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['115年度預算結構'],
-                    datasets: budgetDetails.map(d => ({
-                        label: d.label,
-                        data: [d.value],
-                        backgroundColor: d.color,
-                        barPercentage: 1.0,
-                        categoryPercentage: 1.0
-                    }))
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { 
-                        x: { stacked: true, display: false, min: 0, max: totalBudget },
-                        y: { stacked: true, display: false }
-                    },
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: { enabled: false } // 關閉預設 Tooltip
-                    },
-                    layout: { padding: 0 }
-                }
-            });
-            
-            // 產生互動式圖例
-            const legendContainer = document.getElementById('chartAllocationLegend');
-            const infoOverlay = document.getElementById('bill-info-overlay');
-            const arrowLine = document.getElementById('dynamic-arrow');
-            
-            if(legendContainer) {
-                let legendHtml = '';
-                budgetDetails.forEach((ds, index) => {
-                    let color = ds.color.replace('0.5', '1'); 
-                    legendHtml += `
-                        <div class="legend-item" onclick="updateBillOverlay(${index}, '${ds.label}', '${ds.display}', '${ds.arrow}')">
-                            <div class="legend-color-box" style="background-color:${color}; border:none;"></div>
-                            <span>${ds.label}</span>
-                        </div>
-                    `;
-                });
-                legendContainer.innerHTML = legendHtml;
-            }
-
-            // 定義更新 overlay 的函式
-            window.updateBillOverlay = function(index, label, display, arrow) {
-                // 更新文字
-                infoOverlay.innerHTML = `
-                    <p class="bill-info-text">${label} ${display} (${arrow})</p>
-                `;
-                
-                // 更新圖例 Active 狀態
-                document.querySelectorAll('.legend-item').forEach((el, i) => {
-                    if (i === index) el.classList.add('active');
-                    else el.classList.remove('active');
-                });
-
-                // ★★★ 繪製指引線 ★★★
-                if (!chartAllocationInstance) return;
-                
-                // 1. 取得該 dataset 在圖表中的 meta 資訊
-                const meta = chartAllocationInstance.getDatasetMeta(index);
-                const bar = meta.data[0]; // 因為只有一條橫條，所以取第0個元素
-                
-                if (bar) {
-                    // 2. 取得色塊的 X 軸中心點 (bar.x 是終點, bar.base 是起點)
-                    const segmentCenterX = (bar.x + bar.base) / 2;
-                    const segmentTopY = bar.y - (bar.height / 2); // 色塊頂端
-
-                    // 3. 取得 Info Box 的位置
-                    // 注意：因為 Info Box 是置中的，我們假設它的 "出發點" 是中心偏下
-                    // 為了簡化，我們讓線條從 Info Box 的正下方射出
-                    const containerWidth = document.querySelector('.bill-container').offsetWidth;
-                    const boxCenterX = containerWidth / 2;
-                    const boxBottomY = (document.querySelector('.bill-container').offsetHeight / 2) + 25; // 大約在 box 下緣
-
-                    // 4. 畫線 (SVG Path)
-                    // M = Move to (Box Bottom), L = Line to (Segment Top)
-                    // 為了美觀，我們讓線條有點弧度或是直接連線
-                    // 這裡用最直接的直線，並指向色塊的上方中心
-                    
-                    const pathData = `M ${boxCenterX} ${boxBottomY} L ${segmentCenterX} ${segmentTopY + 10}`;
-                    arrowLine.setAttribute('d', pathData);
-                    arrowLine.style.opacity = '1';
-                }
-            };
-            
-            mainChartsRendered=true;
         }
     </script>
 </body>
