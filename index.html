@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (手機版修正)</title>
+    <title>中央政府總預算觀測站 (完整照片版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -11,21 +11,18 @@
     <style>
         /* --- 基礎設定 (v56 現代高對比配色) --- */
         :root {
-            /* 指定配色 */
-            --bg-color: #F8F8F8;       /* 背景底色 (極淺灰) */
-            --primary-color: #070707;  /* 主要文字 (幾近純黑) */
-            --secondary-color: #086788;/* 深藍綠 (主要強調/標題裝飾/通過) */
-            --accent-color: #F0C808;   /* 鮮明黃 (亮點/凍結/強調邊框) */
-            --highlight-color: #A6DAEE;/* 天藍色 (Hover/次要) */
+            --bg-color: #F8F8F8;       
+            --primary-color: #070707;  
+            --secondary-color: #086788;
+            --accent-color: #F0C808;   
+            --highlight-color: #A6DAEE;
             
-            /* 功能性顏色 (鮮明化) */
-            --danger-color: #E74C3C;   /* 亮紅色 (刪減) */
-            --warning-color: var(--accent-color); /* 使用鮮明黃 (凍結) */
-            --success-color: var(--secondary-color); /* 使用深藍綠 (通過) */
-            --card-bg: #FFFFFF;        /* 卡片白底 */
-            --border-color: #e0e0e0;   /* 淺灰邊框 */
+            --danger-color: #E74C3C;   
+            --warning-color: var(--accent-color); 
+            --success-color: var(--secondary-color); 
+            --card-bg: #FFFFFF;        
+            --border-color: #e0e0e0;   
             
-            /* 政黨代表色 */
             --party-kmt: #000095;
             --party-dpp: #1b9431;
             --party-tpp: #28c7c7;
@@ -75,7 +72,6 @@
             border-top: 4px solid var(--secondary-color); 
         }
         .footer-content { max-width: 800px; margin: 0 auto; }
-        .footer-source { margin-bottom: 15px; line-height: 1.8; }
         .footer-disclaimer { 
             background: rgba(8, 103, 136, 0.1); color: var(--secondary-color); 
             display: inline-block; padding: 8px 15px; border-radius: 8px; 
@@ -96,29 +92,24 @@
 
         .chart-container { position: relative; height: 350px; width: 100%; }
 
-        /* ★★★ 1000元紙鈔背景容器 (修正版：絕對定位強制貼合) ★★★ */
+        /* ★★★ 1000元紙鈔背景容器 (手機版修正) ★★★ */
         .bill-container {
-            position: relative; /* 作為定位基準點 */
+            position: relative;
             width: 100%;
-            /* 強制維持 1000 元紙鈔比例 160mm x 70mm = 16:7 */
             aspect-ratio: 16 / 7; 
-            
+            height: auto !important;
             background-image: url('1000.png'); 
-            /* 強制圖片 100% 填滿容器，不裁切 */
             background-size: 100% 100%; 
             background-position: center;
             background-repeat: no-repeat;
-            
             border-radius: 8px;
             box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-            
             padding: 0; 
             overflow: hidden;
             border: 2px solid var(--secondary-color);
             box-sizing: border-box; 
         }
-        
-        /* ★★★ 關鍵修改：強制 Canvas 絕對定位，無視任何流動佈局，完全貼合父容器 ★★★ */
+        /* 強制 Canvas 絕對定位，無視佈局，完全貼合父容器 */
         .bill-container canvas {
             position: absolute !important;
             top: 0 !important;
@@ -129,64 +120,24 @@
         }
 
         /* 獨立圖例區 */
-        .chart-legend {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-            padding: 15px;
-            background: rgba(8, 103, 136, 0.05);
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            font-size: 0.95rem;
-            color: var(--primary-color);
-            cursor: default;
-            font-weight: 500;
-        }
-        .legend-color-box {
-            width: 14px;
-            height: 14px;
-            border-radius: 3px;
-            margin-right: 8px;
-            border: 1px solid rgba(0,0,0,0.1);
-            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
-        }
+        .chart-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 20px; padding: 15px; background: rgba(8, 103, 136, 0.05); border-radius: 8px; border: 1px solid var(--border-color); }
+        .legend-item { display: flex; align-items: center; font-size: 0.95rem; color: var(--primary-color); cursor: default; font-weight: 500; }
+        .legend-color-box { width: 14px; height: 14px; border-radius: 3px; margin-right: 8px; border: 1px solid rgba(0,0,0,0.1); box-shadow: 1px 1px 3px rgba(0,0,0,0.1); }
 
         /* 按鈕群組 */
         .btn-group { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 1rem; }
-        .big-btn { 
-            padding: 1.5rem; width: 220px; border: none; border-radius: 12px; cursor: pointer; 
-            font-weight: 800; font-size: 1.1rem; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: transform 0.2s, box-shadow 0.2s, filter 0.2s; 
-            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-        }
+        .big-btn { padding: 1.5rem; width: 220px; border: none; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 1.1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: transform 0.2s, box-shadow 0.2s, filter 0.2s; box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); }
         .big-btn:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2); filter: brightness(1.1); }
         .btn-a { background: linear-gradient(135deg, var(--secondary-color), #0a7ea6); color: white; }
         .btn-c { background: linear-gradient(135deg, var(--accent-color), #ffd500); color: var(--primary-color); }
         
         /* Search */
         .search-wrapper { margin: 2rem 0; text-align: center; width: 100%; }
-        .search-input-lg { 
-            width: 100%; max-width: 600px; padding: 15px 25px; font-size: 1.1rem; 
-            border: 3px solid var(--border-color); border-radius: 50px; outline: none; transition: 0.3s; 
-            background-color: var(--card-bg); color: var(--primary-color);
-        }
+        .search-input-lg { width: 100%; max-width: 600px; padding: 15px 25px; font-size: 1.1rem; border: 3px solid var(--border-color); border-radius: 50px; outline: none; transition: 0.3s; background-color: var(--card-bg); color: var(--primary-color); }
         .search-input-lg:focus { border-color: var(--secondary-color); box-shadow: 0 0 0 4px rgba(8, 103, 136, 0.15); }
         
         /* Project Block */
-        .project-block { 
-            background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 15px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s, border-color 0.2s; 
-            display: grid; grid-template-columns: 1fr auto; gap: 15px; cursor: pointer; 
-            border: 2px solid var(--border-color);
-            border-left: 8px solid var(--accent-color);
-        }
+        .project-block { background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s, border-color 0.2s; display: grid; grid-template-columns: 1fr auto; gap: 15px; cursor: pointer; border: 2px solid var(--border-color); border-left: 8px solid var(--accent-color); }
         .project-block:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); border-color: var(--secondary-color); }
         .pb-info { display:flex; flex-direction:column; justify-content:center; min-width: 0; }
         .pb-title { font-size: 1.2rem; font-weight: bold; color: var(--primary-color); margin: 0 0 8px 0; word-break: break-word; }
@@ -261,7 +212,7 @@
         .legislator-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 30px; margin-top: 25px; }
         .leg-card { background: white; border-radius: 16px; padding: 30px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: 0.3s; display: flex; flex-direction: column; align-items: center; cursor: pointer; border: 2px solid var(--border-color); }
         .leg-card:hover { transform: translateY(-8px); box-shadow: 0 12px 25px rgba(0,0,0,0.1); border-color: var(--accent-color); }
-        .leg-avatar { width: 110px; height: 110px; border-radius: 50%; background-color: var(--bg-color); margin-bottom: 20px; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; overflow: hidden; background-size: cover; background-position: center; }
+        .leg-avatar { width: 110px; height: 110px; border-radius: 50%; background-color: var(--bg-color); margin-bottom: 20px; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 3.5rem; overflow: hidden; background-position: center; position: relative; }
         .leg-name { font-size: 1.5rem; font-weight: 900; margin-bottom: 8px; color: var(--primary-color); }
         .leg-party-tag { padding: 5px 15px; border-radius: 20px; color: white; font-size: 0.9rem; font-weight: bold; margin-bottom: 25px; display: inline-block; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
         .tag-kmt { background-color: var(--party-kmt); }
@@ -276,7 +227,7 @@
         .stat-label { font-size: 0.85rem; color: #777; font-weight: bold; }
         .leg-modal-body { padding: 35px; overflow-y: auto; max-height: 90vh; }
         .leg-detail-header { text-align: center; margin-bottom: 40px; }
-        .leg-detail-avatar { width: 130px; height: 130px; border-radius: 50%; background-color: var(--bg-color); margin: 0 auto 15px; border: 5px solid white; box-shadow: 0 8px 20px rgba(0,0,0,0.15); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; font-size: 4.5rem; }
+        .leg-detail-avatar { width: 130px; height: 130px; border-radius: 50%; background-color: var(--bg-color); margin: 0 auto 15px; border: 5px solid white; box-shadow: 0 8px 20px rgba(0,0,0,0.15); background-position: center; display: flex; align-items: center; justify-content: center; font-size: 4.5rem; position: relative; overflow: hidden; }
         .leg-detail-table-title { border-left: 8px solid var(--secondary-color); padding-left: 15px; margin: 40px 0 20px 0; color: var(--primary-color); font-size: 1.3rem; }
         .title-cut { border-color: var(--danger-color); }
         .title-freeze { border-color: var(--accent-color); }
@@ -310,7 +261,8 @@
     <div id="error-display" class="loading-overlay" style="display:none;">
         <div class="error-message">
             <h3>⚠️ 資料讀取失敗</h3>
-            <p>無法連線至資料庫，請檢查您的 Google Apps Script 部署網址是否正確，權限是否設為「所有人」。</p>
+            <p>無法連線至資料庫，可能是因為網路安全設定阻擋。</p>
+            <p><strong>請嘗試：</strong> 使用 "Live Server" 開啟，或檢查網路連線。</p>
         </div>
     </div>
 
@@ -489,7 +441,7 @@
 
     <script>
         // ★★★ 請務必在此填入您正確的 GAS 網址 (記得更新部署為新版本) ★★★
-        const YOUR_GAS_URL = 'https://script.google.com/macros/s/AKfycbx9zsgAufhC0P94sHbx3EqMjnGdjB0GGBoDBZIoD4VJSe5RrMio5TLfDYL9Q5uqrSWy/exec'; 
+        const YOUR_GAS_URL = 'https://script.google.com/macros/s/AKfycbzG55TUuaKpgD9dqG8clvDJ0iXwtDtZHNAbHJ_t9mWPNAzYdNyf2pvkT3XvDJRUOX7L/exec'; 
 
         // 設定資料來源 (透過 GAS 轉發)
         const dataSources = {
@@ -609,24 +561,40 @@
             if(!hasFreeze) tableFreeze.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#999;">無凍結提案</td></tr>';
         }
 
-        // 開啟立委詳情 Modal
+        // 開啟立委詳情 Modal (支援本地照片版)
         function openDetailC(str) {
             const row = JSON.parse(decodeURIComponent(str));
             const modal = document.getElementById('detailModalC');
-            document.getElementById('mc-name').innerText = row['委員姓名'];
+            const name = row['委員姓名'];
+            
+            document.getElementById('mc-name').innerText = name;
             document.getElementById('mc-party').innerText = row['黨籍'];
+            
             let partyClass = 'tag-other';
             const party = row['黨籍'] || '';
-            if(party.includes('民進'))partyClass='tag-dpp';else if(party.includes('國民'))partyClass='tag-kmt';else if(party.includes('民眾'))partyClass='tag-tpp';else if(party.includes('時代'))partyClass='tag-npp';
+            if(party.includes('民進')) partyClass='tag-dpp';
+            else if(party.includes('國民')) partyClass='tag-kmt';
+            else if(party.includes('民眾')) partyClass='tag-tpp';
+            else if(party.includes('時代')) partyClass='tag-npp';
             document.getElementById('mc-party').className = `leg-party-tag ${partyClass}`;
-            const photoUrl = row['照片'] || '';
+            
+            // ★★★ 修改處：同樣使用自動路徑 ★★★
+            const photoPath = `./photos/${name}.jpg`;
             const avatarDiv = document.getElementById('mc-avatar');
-            if(photoUrl && photoUrl.startsWith('http')) {
-                avatarDiv.innerHTML = ''; avatarDiv.style.backgroundImage = `url('${photoUrl}')`;
-            } else {
-                avatarDiv.style.backgroundImage = ''; avatarDiv.innerHTML = '🧑‍💼';
-            }
-            // ★★★ Reset Scroll Here (Using setTimeout for guaranteed reset) ★★★
+            
+            // 清空內容並重寫 HTML 結構以支援圖片載入檢測
+            avatarDiv.innerHTML = `
+                <span class="default-icon" style="z-index:1;">🧑‍💼</span>
+                <img src="${photoPath}" 
+                     style="width:100%; height:100%; object-fit:cover; display:none; border-radius:50%;" 
+                     onload="this.style.display='block'; this.previousElementSibling.style.display='none';"
+                     onerror="this.style.display='none';">
+            `;
+            // 移除舊的 background-image 設定，改用內部的 img 標籤控制
+            avatarDiv.style.backgroundImage = 'none';
+            avatarDiv.style.overflow = 'hidden'; 
+            avatarDiv.style.position = 'relative';
+
             setTimeout(() => {
                 const legBody = document.querySelector('#detailModalC .leg-modal-body');
                 if (legBody) legBody.scrollTop = 0;
@@ -636,21 +604,44 @@
             modal.style.display = 'flex';
         }
 
-        // 渲染立委卡片
+        // 渲染立委卡片 (支援本地照片版)
         function renderLegislatorGrid(data) {
             const container = document.getElementById('leg-container-c');
-            if(!data || data.length === 0) { container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999; font-size:1.1rem; padding:20px;">無資料</p>'; return; }
+            if(!data || data.length === 0) { container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999;">無資料</p>'; return; }
+            
             let html = '';
             data.forEach(row => {
                 const name = row['委員姓名'] || '未知委員';
                 const party = row['黨籍'] || '無黨籍';
-                const photoUrl = row['照片'] || '';
+                
+                // ★★★ 修改處：自動拼湊照片路徑 ★★★
+                const photoPath = `./photos/${name}.jpg`;
+
                 let partyClass = 'tag-other';
-                if(party.includes('民進'))partyClass='tag-dpp';else if(party.includes('國民'))partyClass='tag-kmt';else if(party.includes('民眾'))partyClass='tag-tpp';else if(party.includes('時代'))partyClass='tag-npp';
-                let avatarHtml='🧑‍💼';
-                if(photoUrl&&photoUrl.startsWith('http')){avatarHtml=`<div style="width:100%; height:100%; border-radius:50%; background-image:url('${photoUrl}'); background-size:cover; background-position:center;"></div>`}
-                const rowStr=encodeURIComponent(JSON.stringify(row));
-                html+=`<div class="leg-card" onclick="openDetailC('${rowStr}')"><div class="leg-avatar">${avatarHtml}</div><div class="leg-name">${name}</div><span class="leg-party-tag ${partyClass}">${party}</span><div class="leg-stats-box"><div class="stat-item"><span class="stat-val" style="color:var(--danger-color);">${row['刪減案數']||0}</span><span class="stat-label">刪減案</span></div><div class="stat-item"><span class="stat-val" style="color:var(--accent-color);">${row['凍結案數']||0}</span><span class="stat-label">凍結案</span></div><div class="stat-item"><span class="stat-val" style="color:var(--secondary-color);">${row['主決議數']||0}</span><span class="stat-label">主決議</span></div></div></div>`
+                if(party.includes('民進')) partyClass='tag-dpp';
+                else if(party.includes('國民')) partyClass='tag-kmt';
+                else if(party.includes('民眾')) partyClass='tag-tpp';
+                else if(party.includes('時代')) partyClass='tag-npp';
+
+                const rowStr = encodeURIComponent(JSON.stringify(row));
+                
+                html += `
+                <div class="leg-card" onclick="openDetailC('${rowStr}')">
+                    <div class="leg-avatar" id="avatar-${name}" style="position:relative; overflow:hidden;">
+                        <span class="default-icon" style="z-index:1;">🧑‍💼</span>
+                        <img src="${photoPath}" 
+                             style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; display:none;" 
+                             onload="this.style.display='block'; this.previousElementSibling.style.display='none';"
+                             onerror="this.style.display='none';">
+                    </div>
+                    <div class="leg-name">${name}</div>
+                    <span class="leg-party-tag ${partyClass}">${party}</span>
+                    <div class="leg-stats-box">
+                        <div class="stat-item"><span class="stat-val" style="color:var(--danger-color);">${row['刪減案數']||0}</span><span class="stat-label">刪減案</span></div>
+                        <div class="stat-item"><span class="stat-val" style="color:var(--warning-color);">${row['凍結案數']||0}</span><span class="stat-label">凍結案</span></div>
+                        <div class="stat-item"><span class="stat-val" style="color:var(--secondary-color);">${row['主決議數']||0}</span><span class="stat-label">主決議</span></div>
+                    </div>
+                </div>`;
             });
             container.innerHTML = html;
         }
@@ -748,11 +739,6 @@
                     document.querySelectorAll('.demo-mode-badge').forEach(el => el.style.display = 'block');
                 }
                 
-                // 如果是第一次載入失敗，顯示錯誤提示 (可選)
-                if (errorDisplay && !silent && !isDemoMode) {
-                   // errorDisplay.style.display = 'flex'; // 可以選擇顯示或不顯示，因為已經有 Mock Data 了
-                }
-
                 return mockData;
             }
         }
