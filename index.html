@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (Query API 修正版)</title>
+    <title>中央政府總預算觀測站 (v73 ID內建修正版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     
     <style>
         /* --- 基礎設定 (v56 現代高對比配色) --- */
@@ -169,8 +168,7 @@
     <div id="error-display" class="loading-overlay" style="display:none;">
         <div class="error-message">
             <h3>⚠️ 資料讀取失敗</h3>
-            <p>無法連線至資料庫。Google 拒絕了連線請求。</p>
-            <p style="font-size:0.9rem; margin-top:10px;">請確認：<br>1. FILE_ID 是否正確 (不是 2PACX 開頭)<br>2. 權限是否設為「知道連結的任何人 (Anyone with the link)」</p>
+            <p>無法連線至資料庫。請確認 Google 試算表已「發布到網路」。</p>
         </div>
     </div>
 
@@ -338,11 +336,11 @@
     </main>
 
     <script>
-        // ★★★ Query API 設定 (請填入您正確的 File ID) ★★★
-        // 請務必確認這個 ID 對應的試算表權限是 "Anyone with the link"
-        const FILE_ID = '1vS6ZFEMdgBFyC6O0Axmx7TvcckTzMoDCxrb5V_8gHJmyzBEXx'; 
-        
-        // 為了避免快取，我們在網址後面加亂數
+        // ★★★ 設定檔案 ID (已自動填入您的 ID) ★★★
+        // 重要：請務必確保此 Google 試算表已經 "檔案" -> "共用" -> "發布到網路"
+        const FILE_ID = '1Qft9FVm9XtT3SVzbgX1NSduPP0sBR3CdGqiUsm-Mmrs'; 
+
+        // 使用 Query API (不透過 GAS，更穩定)
         const getQueryUrl = (gid) => `https://docs.google.com/spreadsheets/d/${FILE_ID}/gviz/tq?tqx=out:json&tq&gid=${gid}&_=${new Date().getTime()}`;
 
         const dataSources = {
@@ -351,7 +349,7 @@
             'page-c': getQueryUrl('1025885437') 
         };
 
-        // Mock Data
+        // Mock Data (備援)
         const MOCK_DATA_A=[{'計畫編號':'TEST001','計畫名稱':'國防自主強化計畫 (測試資料)','主管機關':'國防部','預算金額':'5000000000','工作內容':'這是測試用的計畫說明。','分支計畫':'潛艦國造:3000000000|無人機研發:2000000000','用途比例':'裝備採購:70|研發:30'}];
         const MOCK_DATA_B=[{'計畫編號':'TEST001','計畫名稱':'國防自主強化計畫 (測試資料)','主管機關':'國防部','預算金額':'5000000000','刪減金額':'1000000','凍結金額':'50000000','委員會刪減':'500000','委員會凍結':'20000000','協商刪減':'500000','協商凍結':'30000000','提案紀錄':'王小明:凍結:理由A|李小華:刪減:理由B','資料類型':'計畫'}];
         const MOCK_DATA_C=[{'委員姓名':'王小明 (測試)','黨籍':'無黨籍','刪減案數':'5','凍結案數':'10','主決議數':'2','照片':'','提案明細':'刪減#國防自主強化計畫 (測試資料)#100萬#理由B#TEST001'}];
@@ -360,6 +358,71 @@
         let mainChartsRendered = false;
         let isDemoMode = false;
 
+        // ★★★ 將 renderLegislatorGrid 移到最上方，防止 ReferenceError ★★★
+        function renderLegislatorGrid(data) {
+            const container = document.getElementById('leg-container-c');
+            if(!data || data.length === 0) { container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999;">無資料</p>'; return; }
+            
+            let html = '';
+            data.forEach(row => {
+                const name = row['委員姓名'] || '未知委員';
+                const party = row['黨籍'] || '無黨籍';
+                const photoPath = `./photos/${name}.jpg`;
+
+                let partyClass = 'tag-other';
+                if(party.includes('民進')) partyClass='tag-dpp';
+                else if(party.includes('國民')) partyClass='tag-kmt';
+                else if(party.includes('民眾')) partyClass='tag-tpp';
+                else if(party.includes('時代')) partyClass='tag-npp';
+
+                const rowStr = encodeURIComponent(JSON.stringify(row));
+                
+                html += `
+                <div class="leg-card" onclick="openDetailC('${rowStr}')">
+                    <div class="leg-avatar" id="avatar-${name}" style="position:relative; overflow:hidden;">
+                        <span class="default-icon" style="z-index:1;">🧑‍💼</span>
+                        <img src="${photoPath}" 
+                             style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; display:none;" 
+                             onload="this.style.display='block'; this.previousElementSibling.style.display='none';"
+                             onerror="this.style.display='none';">
+                    </div>
+                    <div class="leg-name">${name}</div>
+                    <span class="leg-party-tag ${partyClass}">${party}</span>
+                    <div class="leg-stats-box">
+                        <div class="stat-item"><span class="stat-val" style="color:var(--danger-color);">${row['刪減案數']||0}</span><span class="stat-label">刪減案</span></div>
+                        <div class="stat-item"><span class="stat-val" style="color:var(--warning-color);">${row['凍結案數']||0}</span><span class="stat-label">凍結案</span></div>
+                        <div class="stat-item"><span class="stat-val" style="color:var(--secondary-color);">${row['主決議數']||0}</span><span class="stat-label">主決議</span></div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // 全域函式宣告
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0, 0);
+            document.querySelectorAll('header nav button').forEach(b => b.classList.remove('nav-active'));
+            if(pageId === 'home') document.getElementById('nav-home').classList.add('nav-active');
+            if(pageId === 'page-budget') document.getElementById('nav-budget').classList.add('nav-active');
+            if(pageId === 'page-legislator') document.getElementById('nav-legislator').classList.add('nav-active');
+            if (pageId === 'page-legislator' && allDataPageC.length === 0 && !isDemoMode) fetchData('page-c');
+        }
+
+        function toggleDesc() {
+            const container = document.getElementById('u-desc-container');
+            const btn = document.getElementById('toggle-desc-btn');
+            if (container.classList.contains('expanded')) {
+                container.classList.remove('expanded');
+                btn.innerText = '展開閱讀全文';
+            } else {
+                container.classList.add('expanded');
+                btn.innerText = '收合內容';
+            }
+        }
+
+        // 監聽器
         window.addEventListener('DOMContentLoaded', () => {
             renderMainCharts();
             Promise.all([
@@ -438,7 +501,6 @@
                 
                 const text = await response.text();
                 
-                // 檢查是否被導向登入頁面
                 if (text.includes('<!DOCTYPE html>') || text.includes('google.com/accounts')) {
                     throw new Error("Login Page Detected (Permissions Error)");
                 }
@@ -472,7 +534,6 @@
                     loader.style.display = 'none';
                     if(errorDisplay) {
                         errorDisplay.style.display = 'flex';
-                        // 讓使用者知道發生了什麼事
                         if (error.message.includes("Login Page")) {
                             errorDisplay.innerHTML = `<div class="error-message"><h3>⚠️ 權限錯誤</h3><p>Google 試算表要求登入。</p><p>請務必將試算表共用權限設為「知道連結的任何人 (檢視者)」</p><p>並確認 FILE_ID 正確。</p></div>`;
                         }
@@ -483,7 +544,6 @@
             }
         }
 
-        // ... (以下所有圖表與邏輯函式保持不變) ...
         function filterLegislators(party) {
             document.querySelectorAll('.filter-tag').forEach(btn => {
                 btn.classList.remove('active');
