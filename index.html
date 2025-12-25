@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v85 語法修正版)</title>
+    <title>中央政府總預算觀測站 (v88 雙保險整合版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -194,6 +194,7 @@
             .btn-group { flex-direction: column; gap: 15px; }
             .big-btn { width: 100%; }
             .chart-container { height: 250px; }
+            /* ★★★ 手機版排行榜單欄設定 ★★★ */
             .ranking-container { grid-template-columns: 1fr; gap: 20px; }
             .modal-charts-grid { grid-template-columns: 1fr; }
             .search-input-lg { font-size: 16px; padding: 12px 20px; }
@@ -916,7 +917,6 @@
             document.getElementById('u-dept').innerText = baseData['主管機關'];
             document.getElementById('u-amount').innerText = formatCurrency(parseMoney(baseData['預算金額']));
             
-            // Tab A (Plan)
             if (planData) {
                 document.getElementById('u-desc').innerText = planData['工作內容'] || '無';
                 document.getElementById('u-desc-container').classList.remove('expanded');
@@ -925,7 +925,6 @@
                 renderDetailChartsA(planData);
             } else { document.getElementById('u-desc').innerText = '此計畫無詳細編列內容資料。'; }
             
-            // Tab B (Review)
             const reviewContainer = document.getElementById('review-data-container');
             const reviewNoData = document.getElementById('review-no-data');
             if (reviewData) {
@@ -1009,11 +1008,25 @@
             const cut=parseMoney(row['刪減金額']);
             const freeze=parseMoney(row['凍結金額']);
             const pass=total-cut-freeze;
+            
             const ctx1=document.getElementById('chartBResult').getContext('2d');
             chartB1=new Chart(ctx1,{type:'bar',data:{labels:['結果'],datasets:[{label:'通過',data:[pass],backgroundColor:'#086788'},{label:'凍結',data:[freeze],backgroundColor:'#F0C808'},{label:'刪減',data:[cut],backgroundColor:'#E74C3C'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true}},plugins:{tooltip:tooltipCurrencyCallback}}});
-            const cCut=parseMoney(row['委員會刪減']);const cFreeze=parseMoney(row['委員會凍結']);const nCut=parseMoney(row['協商刪減']);const nFreeze=parseMoney(row['協商凍結']);const fCut=parseMoney(row['院會刪減']);const fFreeze=parseMoney(row['院會凍結']);
+            
+            // ★★★ 雙保險讀取法：如果找不到新欄位，就嘗試讀取舊欄位 ★★★
+            
+            // 1. 委員會階段
+            const cCut = parseMoney(row['委員會刪減']);
+            const cFreeze = parseMoney(row['委員會凍結']);
+            
+            // 2. 院會表決階段 (原: 協商)
+            const nCut = parseMoney(row['院會表決刪減'] || row['協商刪減']); 
+            const nFreeze = parseMoney(row['院會表決凍結'] || row['協商凍結']);
+            
+            // 3. 通案階段 (原: 院會)
+            const fCut = parseMoney(row['通案刪減'] || row['院會刪減']); 
+            const fFreeze = parseMoney(row['通案凍結'] || row['院會凍結']);
+
             const ctx2=document.getElementById('chartBStages').getContext('2d');
-            // ★★★ 關鍵修改：變更為「委員會、院會表決、通案」 ★★★
             chartB2=new Chart(ctx2,{type:'bar',data:{
                 labels:['委員會','院會表決','通案'],
                 datasets:[{label:'刪減',data:[cCut,nCut,fCut],backgroundColor:'#E74C3C'},{label:'凍結',data:[cFreeze,nFreeze,fFreeze],backgroundColor:'#F0C808'}]
