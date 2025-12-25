@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v84 審查階段更名版)</title>
+    <title>中央政府總預算觀測站 (v85 語法修正版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -528,6 +528,7 @@
 
                 const rowStr = encodeURIComponent(JSON.stringify(row));
                 
+                // ★★★ object-position: center 25% 已套用 ★★★
                 html += `
                 <div class="leg-card" onclick="openDetailC('${rowStr}')">
                     <div class="leg-avatar" id="avatar-${name}" style="position:relative; overflow:hidden;">
@@ -1012,10 +1013,11 @@
             chartB1=new Chart(ctx1,{type:'bar',data:{labels:['結果'],datasets:[{label:'通過',data:[pass],backgroundColor:'#086788'},{label:'凍結',data:[freeze],backgroundColor:'#F0C808'},{label:'刪減',data:[cut],backgroundColor:'#E74C3C'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true}},plugins:{tooltip:tooltipCurrencyCallback}}});
             const cCut=parseMoney(row['委員會刪減']);const cFreeze=parseMoney(row['委員會凍結']);const nCut=parseMoney(row['協商刪減']);const nFreeze=parseMoney(row['協商凍結']);const fCut=parseMoney(row['院會刪減']);const fFreeze=parseMoney(row['院會凍結']);
             const ctx2=document.getElementById('chartBStages').getContext('2d');
+            // ★★★ 關鍵修改：變更為「委員會、院會表決、通案」 ★★★
             chartB2=new Chart(ctx2,{type:'bar',data:{
                 labels:['委員會','院會表決','通案'],
                 datasets:[{label:'刪減',data:[cCut,nCut,fCut],backgroundColor:'#E74C3C'},{label:'凍結',data:[cFreeze,nFreeze,fFreeze],backgroundColor:'#F0C808'}]
-            }},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:tooltipCurrencyCallback}}});
+            },options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:tooltipCurrencyCallback}}});
         }
     </script>
 </body>
