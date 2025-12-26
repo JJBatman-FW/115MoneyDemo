@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v88 雙保險整合版)</title>
+    <title>中央政府總預算觀測站 (v104 互動優化版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     
     <style>
-        /* --- 基礎設定 (v56 現代高對比配色) --- */
+        /* --- 基礎設定 --- */
         :root {
             --bg-color: #F8F8F8; --primary-color: #070707; --secondary-color: #086788;
             --accent-color: #F0C808; --highlight-color: #A6DAEE;
@@ -37,9 +37,7 @@
         
         /* Footer */
         footer { background-color: var(--bg-color); color: #555; padding: 3rem 1rem; text-align: center; margin-top: auto; font-size: 0.9rem; border-top: 4px solid var(--secondary-color); }
-        .footer-content { max-width: 800px; margin: 0 auto; }
-        .footer-disclaimer { background: rgba(8, 103, 136, 0.1); color: var(--secondary-color); display: inline-block; padding: 8px 15px; border-radius: 8px; border: 1px solid var(--secondary-color); font-weight: bold; margin-top: 10px; }
-
+        
         /* Components */
         .section-title { text-align: center; margin: 3rem 0 1.5rem 0; color: var(--primary-color); position: relative; font-weight: 800; }
         .section-title::after { content: ''; display: block; width: 60px; height: 5px; background: var(--accent-color); margin: 15px auto 0; border-radius: 3px; }
@@ -51,43 +49,30 @@
         /* Bill Container */
         .bill-container { position: relative; width: 100%; aspect-ratio: 16 / 7; background-image: url('1000.png'); background-size: 100% 100%; background-position: center; background-repeat: no-repeat; border-radius: 8px; box-shadow: 0 6px 15px rgba(0,0,0,0.1); padding: 0; overflow: hidden; border: 2px solid var(--secondary-color); box-sizing: border-box; }
         .bill-container canvas { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; display: block; z-index: 1; }
-        
-        /* SVG 指引線層 */
         .bill-svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
         .bill-arrow-line { stroke: var(--secondary-color); stroke-width: 3; fill: none; filter: drop-shadow(0px 1px 2px rgba(255,255,255,0.8)); transition: all 0.3s; }
-
-        /* 資訊看板 */
-        .bill-info-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 10px 20px;
-            border-radius: 50px;
-            border: 3px solid var(--secondary-color);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            text-align: center;
-            z-index: 10;
-            pointer-events: none; 
-            min-width: 220px;
-            transition: all 0.3s ease;
-        }
+        .bill-info-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(255, 255, 255, 0.95); padding: 10px 20px; border-radius: 50px; border: 3px solid var(--secondary-color); box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center; z-index: 10; pointer-events: none; min-width: 220px; transition: all 0.3s ease; }
         .bill-info-text { font-size: 1.15rem; font-weight: 900; color: var(--secondary-color); margin: 0; line-height: 1.4; }
 
         /* Legend */
         .chart-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; padding: 15px; background: rgba(8, 103, 136, 0.05); border-radius: 8px; border: 1px solid var(--border-color); }
-        .legend-item { 
-            display: flex; align-items: center; font-size: 0.9rem; color: var(--primary-color); 
-            cursor: pointer; font-weight: 500; 
-            padding: 6px 12px; border-radius: 20px; background: white; border: 1px solid #ddd;
-            transition: all 0.2s;
-            user-select: none;
-        }
+        .legend-item { display: flex; align-items: center; font-size: 0.9rem; color: var(--primary-color); cursor: pointer; font-weight: 500; padding: 6px 12px; border-radius: 20px; background: white; border: 1px solid #ddd; transition: all 0.2s; user-select: none; }
         .legend-item:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .legend-item.active { background-color: var(--secondary-color); color: white; border-color: var(--secondary-color); }
         .legend-color-box { width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; border: 1px solid rgba(0,0,0,0.1); }
         .legend-item.active .legend-color-box { border-color: white; }
+
+        /* Ministry Dashboard */
+        .ministry-dashboard { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; margin-top: 20px; }
+        .ministry-filters { display: flex; gap: 15px; margin-bottom: 20px; }
+        .ministry-select { flex: 1; padding: 10px 15px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; color: var(--primary-color); background: white; outline: none; transition: 0.2s; }
+        .ministry-select:focus { border-color: var(--secondary-color); }
+        .ministry-stats-row { display: flex; justify-content: space-between; margin-bottom: 20px; background: rgba(8, 103, 136, 0.05); padding: 15px; border-radius: 8px; }
+        .m-stat { text-align: center; flex: 1; }
+        .m-stat-label { font-size: 0.85rem; color: #666; font-weight: bold; margin-bottom: 5px; }
+        .m-stat-val { font-size: 1.2rem; font-weight: 900; color: var(--primary-color); }
+        .m-trend-up { color: var(--danger-color); }
+        .m-trend-down { color: var(--success-color); }
 
         /* Buttons & Search */
         .btn-group { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-top: 1rem; }
@@ -99,15 +84,13 @@
         .search-input-lg { width: 100%; max-width: 600px; padding: 15px 25px; font-size: 1.1rem; border: 3px solid var(--border-color); border-radius: 50px; outline: none; transition: 0.3s; background-color: var(--card-bg); color: var(--primary-color); }
         .search-input-lg:focus { border-color: var(--secondary-color); box-shadow: 0 0 0 4px rgba(8, 103, 136, 0.15); }
 
-        /* Project Block */
+        /* Project Block & Rankings */
         .project-block { background: var(--card-bg); border-radius: 12px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s, border-color 0.2s; display: grid; grid-template-columns: 1fr auto; gap: 15px; cursor: pointer; border: 2px solid var(--border-color); border-left: 8px solid var(--accent-color); }
         .project-block:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); border-color: var(--secondary-color); }
         .pb-info { display:flex; flex-direction:column; justify-content:center; min-width: 0; }
         .pb-title { font-size: 1.2rem; font-weight: bold; color: var(--primary-color); margin: 0 0 8px 0; word-break: break-word; }
         .pb-dept { background: var(--bg-color); color: var(--secondary-color); padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; width: fit-content; border: 1px solid rgba(8, 103, 136, 0.3); }
         .pb-amount { font-size: 1.5rem; color: var(--secondary-color); font-weight: 900; white-space: nowrap; text-align: right; }
-
-        /* Ranking */
         .ranking-container { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem; }
         .rank-column h3 { border-bottom: 3px solid var(--secondary-color); padding-bottom: 10px; color: var(--primary-color); }
         .rank-group { margin-bottom: 30px; }
@@ -135,12 +118,21 @@
         .modal-charts-grid { display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 25px; }
         .mini-chart-box { text-align: center; background: #fff; padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .mini-chart-box h4 { margin-top: 0; color: var(--secondary-color); }
+        .modal-analysis-section { background: rgba(8, 103, 136, 0.03); border-radius: 12px; padding: 20px; margin-top: 25px; border: 1px solid #eee; }
+        .analysis-title { font-size: 1.1rem; color: var(--primary-color); font-weight: bold; border-left: 5px solid var(--accent-color); padding-left: 10px; margin-bottom: 15px; }
         .desc-container { position: relative; max-height: 100px; overflow: hidden; transition: max-height 0.3s ease; }
         .desc-container.expanded { max-height: none; }
         .desc-gradient { position: absolute; bottom: 0; left: 0; width: 100%; height: 40px; background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1)); pointer-events: none; }
         .desc-container.expanded .desc-gradient { display: none; }
         .toggle-btn { display: block; width: 100%; text-align: center; padding: 10px; margin-top: 10px; background: var(--bg-color); border: 2px solid var(--secondary-color); border-radius: 8px; cursor: pointer; color: var(--secondary-color); font-weight: bold; transition: 0.2s; }
         .toggle-btn:hover { background: var(--secondary-color); color: white; }
+        
+        /* Jump Links */
+        .clickable-link { color: var(--secondary-color); cursor: pointer; text-decoration: underline; font-weight: bold; transition: 0.2s; display:inline-block; }
+        .clickable-link:hover { color: white; background-color: var(--secondary-color); border-radius: 4px; padding: 0 6px; text-decoration: none; transform: translateY(-1px); }
+        .jump-btn { background: var(--secondary-color); color: white; border: none; padding: 8px 18px; border-radius: 25px; cursor: pointer; font-size: 0.95rem; margin-top: 10px; display: inline-flex; align-items: center; transition: 0.3s; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
+        .jump-btn:hover { transform: translateY(-2px); box-shadow: 3px 3px 8px rgba(0,0,0,0.3); background-color: #0a7ea6; }
+        .jump-btn::after { content: ' ➔'; margin-left: 5px; }
 
         /* Loader & Error */
         .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(248, 248, 248, 0.95); z-index: 999; justify-content: center; align-items: center; flex-direction: column; }
@@ -177,24 +169,18 @@
         .leg-detail-table-title { border-left: 8px solid var(--secondary-color); padding-left: 15px; margin: 40px 0 20px 0; color: var(--primary-color); font-size: 1.3rem; }
         .title-cut { border-color: var(--danger-color); }
         .title-freeze { border-color: var(--accent-color); }
-        .clickable-link { color: var(--secondary-color); cursor: pointer; text-decoration: underline; font-weight: bold; transition: 0.2s; }
-        .clickable-link:hover { color: white; background-color: var(--secondary-color); border-radius: 4px; padding: 2px 6px; text-decoration: none; }
         .proposal-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 1rem; }
         .proposal-table th, .proposal-table td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
         .proposal-table th { background-color: rgba(8, 103, 136, 0.05); color: var(--secondary-color); font-weight: bold; border-bottom: 2px solid var(--secondary-color); }
         .p-tag { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; margin-right: 5px; color: white; box-shadow: 1px 1px 3px rgba(0,0,0,0.2); }
         .p-cut { background: var(--danger-color); }
         .p-freeze { background: var(--accent-color); color: var(--primary-color); }
-        .jump-btn { background: var(--secondary-color); color: white; border: none; padding: 8px 18px; border-radius: 25px; cursor: pointer; font-size: 0.95rem; margin-top: 10px; display: inline-flex; align-items: center; transition: 0.3s; font-weight: bold; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); }
-        .jump-btn:hover { transform: translateY(-2px); box-shadow: 3px 3px 8px rgba(0,0,0,0.3); background-color: #0a7ea6; }
-        .jump-btn::after { content: ' ➔'; margin-left: 5px; }
 
         @media (max-width: 768px) {
             main { padding: 1rem; }
             .btn-group { flex-direction: column; gap: 15px; }
             .big-btn { width: 100%; }
             .chart-container { height: 250px; }
-            /* ★★★ 手機版排行榜單欄設定 ★★★ */
             .ranking-container { grid-template-columns: 1fr; gap: 20px; }
             .modal-charts-grid { grid-template-columns: 1fr; }
             .search-input-lg { font-size: 16px; padding: 12px 20px; }
@@ -205,6 +191,8 @@
             .bill-container { padding: 5% 10%; border-width: 1px; }
             .modal-header-area { padding: 20px; }
             .modal-body-area { padding: 20px; }
+            .ministry-dashboard { grid-template-columns: 1fr; gap: 20px; }
+            .ministry-filters { flex-direction: column; }
         }
     </style>
 </head>
@@ -250,6 +238,22 @@
                         <div class="mini-chart-box"><h4>分支計畫</h4><div style="height:250px;"><canvas id="chartDetailBar"></canvas></div></div>
                         <div class="mini-chart-box"><h4>用途比例</h4><div style="height:250px;"><canvas id="chartDetailPie"></canvas></div></div>
                     </div>
+                    
+                    <div class="modal-analysis-section">
+                        <div class="analysis-title">本計畫佔比分析</div>
+                        <div class="modal-charts-grid">
+                            <div class="mini-chart-box">
+                                <h4>總預算佔比</h4>
+                                <div style="height:120px;"><canvas id="chartModalPlanRatio"></canvas></div>
+                                <p id="caption-plan-ratio" style="font-size:0.85rem; color:#666; margin-top:10px; font-weight:bold;">本計畫金額 vs 主管機關總預算</p>
+                            </div>
+                            <div class="mini-chart-box">
+                                <h4>各用途項目佔比</h4>
+                                <div style="height:250px;"><canvas id="chartModalCatRatio"></canvas></div>
+                                <p id="caption-cat-ratio" style="font-size:0.85rem; color:#666; margin-top:10px; font-weight:bold;">請滑鼠移至(或點擊)該類別的整行區域即可查看</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="tab-content-review" class="tab-content">
                     <div id="review-data-container">
@@ -257,6 +261,15 @@
                             <div class="mini-chart-box"><h4>最終審查結果比例</h4><div style="height:250px;"><canvas id="chartBResult"></canvas></div></div>
                             <div class="mini-chart-box"><h4>三階段刪凍比較</h4><div style="height:250px;"><canvas id="chartBStages"></canvas></div></div>
                         </div>
+                        
+                        <div class="modal-analysis-section">
+                            <div class="analysis-title">主管機關整體審查結果 (參考)</div>
+                             <div class="mini-chart-box">
+                                <div style="height:150px;"><canvas id="chartModalAgencyReview"></canvas></div>
+                                <p style="font-size:0.8rem; color:#666; margin-top:5px;">全機關刪減與凍結總額佔比</p>
+                            </div>
+                        </div>
+
                         <div style="margin-top: 35px;">
                             <h3 style="border-left: 8px solid var(--accent-color); padding-left: 15px; color:var(--primary-color);">委員提案紀錄</h3>
                             <div style="overflow-x: auto;">
@@ -367,6 +380,48 @@
                 </div>
                 <div id="chartAllocationLegend" class="chart-legend"></div>
             </div>
+
+            <div id="ministry-stats-card" class="card">
+                <h3>部會預算詳細分析</h3>
+                <div class="ministry-filters">
+                    <select id="filter-ministry" class="ministry-select" onchange="updateMinistryStats()">
+                        <option value="">請選擇所屬部會</option>
+                    </select>
+                    <select id="filter-unit" class="ministry-select" onchange="updateMinistryStats()">
+                        <option value="">請選擇主管機關 (全部)</option>
+                    </select>
+                </div>
+
+                <div class="ministry-dashboard">
+                    <div>
+                        <div class="ministry-stats-row">
+                            <div class="m-stat">
+                                <div class="m-stat-label">今年預算</div>
+                                <div id="val-this-year" class="m-stat-val">-</div>
+                            </div>
+                            <div class="m-stat" style="border-left:1px solid #ddd; border-right:1px solid #ddd;">
+                                <div class="m-stat-label">去年預算</div>
+                                <div id="val-last-year" class="m-stat-val">-</div>
+                            </div>
+                            <div class="m-stat">
+                                <div class="m-stat-label">增減幅度</div>
+                                <div id="val-growth" class="m-stat-val">-</div>
+                            </div>
+                        </div>
+                        <div style="height: 250px;">
+                            <canvas id="chartMinistryBar"></canvas>
+                        </div>
+                    </div>
+
+                    <div style="border-left: 2px solid #f0f0f0; padding-left: 20px;">
+                         <h4 style="text-align:center; margin-top:0; color:var(--primary-color);">預算分配比例</h4>
+                         <div style="height: 250px;">
+                            <canvas id="chartMinistryPie"></canvas>
+                         </div>
+                    </div>
+                </div>
+            </div>
+            
         </section>
 
         <section id="page-budget" class="page-section">
@@ -398,10 +453,8 @@
     </main>
 
     <script>
-        // ★★★ 設定檔案 ID (已自動填入您的 ID) ★★★
+        // --- 1. Constants & Variables ---
         const FILE_ID = '1Qft9FVm9XtT3SVzbgX1NSduPP0sBR3CdGqiUsm-Mmrs'; 
-
-        // 使用 Query API (不透過 GAS，更穩定)
         const getQueryUrl = (gid) => `https://docs.google.com/spreadsheets/d/${FILE_ID}/gviz/tq?tqx=out:json&tq&gid=${gid}&_=${new Date().getTime()}`;
 
         const dataSources = {
@@ -410,19 +463,40 @@
             'page-c': getQueryUrl('1025885437') 
         };
 
-        // Mock Data
-        const MOCK_DATA_A=[{'計畫編號':'TEST001','計畫名稱':'國防自主強化計畫 (測試資料)','主管機關':'國防部','預算金額':'5000000000','工作內容':'這是測試用的計畫說明。','分支計畫':'潛艦國造:3000000000|無人機研發:2000000000','用途比例':'裝備採購:70|研發:30'}];
-        const MOCK_DATA_B=[{'計畫編號':'TEST001','計畫名稱':'國防自主強化計畫 (測試資料)','主管機關':'國防部','預算金額':'5000000000','刪減金額':'1000000','凍結金額':'50000000','委員會刪減':'500000','委員會凍結':'20000000','協商刪減':'500000','協商凍結':'30000000','提案紀錄':'王小明:凍結:理由A|李小華:刪減:理由B','資料類型':'計畫'}];
-        const MOCK_DATA_C=[{'委員姓名':'王小明 (測試)','黨籍':'無黨籍','刪減案數':'5','凍結案數':'10','主決議數':'2','照片':'','提案明細':'刪減#國防自主強化計畫 (測試資料)#100萬#理由B#TEST001'}];
+        const MOCK_DATA_A=[{'計畫編號':'TEST001','所屬部會':'行政院','主管機關':'國防部','計畫名稱':'國防自主強化計畫 (測試資料)','預算金額':'5000000000','114年預算金額':'4800000000','政事別':'國防','工作內容':'測試說明。','分支計畫':'潛艦國造:3000000000|無人機研發:2000000000','用途比例':'人事費:50000000|業務費:30000000|設備及投資:4000000000|獎補助費:10000000|債務費:0|預備金:0'}];
+        const MOCK_DATA_B=[{'計畫編號':'TEST001','計畫名稱':'國防自主強化計畫','主管機關':'國防部','預算金額':'5000000000','刪減金額':'1000000','凍結金額':'50000000','委員會刪減':'500000','委員會凍結':'20000000','院會表決刪減':'500000','院會表決凍結':'30000000','通案刪減':'100000','通案凍結':'0','提案紀錄':'王小明:凍結:理由A','資料類型':'計畫'}];
+        const MOCK_DATA_C=[{'委員姓名':'王小明','黨籍':'無黨籍','刪減案數':'5','凍結案數':'10','主決議數':'2','照片':'','提案明細':'刪減#國防自主強化計畫 (測試資料)#100萬#理由B#TEST001'}];
         
         let allDataPageA = [], allDataPageB = [], allDataPageB_Plans = [], allDataPageC = []; 
         let mainChartsRendered = false;
         let isDemoMode = false;
+        
+        // Chart Instances
         let chartStatusInstance = null;
-        let chartAllocationInstance = null; // ★★★ 全域變數：紙鈔圖表實例
+        let chartAllocationInstance = null;
+        let chartMinistryBar = null;
+        let chartMinistryPie = null;
+        
+        // Modal Chart Instances
+        let chartModalPlanRatio = null;
+        let chartModalCatRatio = null;
+        let chartModalAgencyReview = null;
+        let chartBarA = null, chartPieA = null, chartB1 = null, chartB2 = null;
 
-        // ★★★ 全域函式定義區 ★★★
+        const categoryColorMap = {
+            '社會福利': 'rgba(231, 76, 60, 1)',
+            '教育科學文化': 'rgba(240, 200, 8, 1)',
+            '國防': 'rgba(8, 103, 136, 1)',
+            '經濟發展': 'rgba(46, 204, 113, 1)',
+            '一般政務': 'rgba(155, 89, 182, 1)',
+            '退休撫卹': 'rgba(52, 152, 219, 1)',
+            '債務還本付息': 'rgba(230, 126, 34, 1)',
+            '補助及其他': 'rgba(26, 188, 156, 1)',
+            '社區發展及環境保護': 'rgba(52, 73, 94, 1)',
+            '其他': '#95A5A6'
+        };
 
+        // --- 2. Helper Functions ---
         function parseMoney(str) {
             if(!str) return 0;
             let s = str + '';
@@ -441,6 +515,12 @@
             else if (absVal >= 10000) return (val / 10000).toFixed(1).replace(/\.0$/, '') + "萬";
             else return val.toLocaleString() + "元";
         }
+        function getColorByType(type) {
+            for (const key in categoryColorMap) {
+                if (type && type.includes(key)) return categoryColorMap[key];
+            }
+            return categoryColorMap['其他'];
+        }
         const tooltipCurrencyCallback = {
             callbacks: {
                 label: function(context) {
@@ -452,330 +532,8 @@
                 }
             }
         };
-
-        function renderRankList(elementId,list,type){const el=document.getElementById(elementId);if(!list||list.length===0){el.innerHTML='<li style="color:#999;">無資料</li>';return}let html='';list.forEach((item,index)=>{let val=type==='cut'?item.cut:item.freeze;let valDisplay=formatCurrency(val);let colorClass=type==='cut'?'color-cut':'color-freeze';html+=`<li><span><span class="rank-idx">${index+1}</span> ${item.name}</span><span class="rank-val ${colorClass}">${valDisplay}</span></li>`});el.innerHTML=html}
-
-        function displayUnifiedBlocks(data){
-            const container=document.getElementById('results-container-budget');
-            if(!data||data.length===0){
-                container.innerHTML='<p align="center" style="color:#999; padding:30px; font-size:1.1rem;">查無資料</p>';
-                return;
-            }
-            let html='';
-            data.forEach(row=>{
-                const id = row['計畫編號'];
-                const amountRaw=parseMoney(row['預算金額']);
-                html+=`<div class="project-block" onclick="openUnifiedDetail('${id}')">
-                    <div class="pb-info">
-                        <h3 class="pb-title">${row['計畫名稱']}</h3>
-                        <span class="pb-dept">${row['主管機關']}</span>
-                    </div>
-                    <div class="pb-amount">${formatCurrency(amountRaw)}</div>
-                </div>`;
-            });
-            container.innerHTML=html;
-        }
-
-        function handleSearchBudget(val) {
-            const container = document.getElementById('results-container-budget');
-            if (!val.trim()) { 
-                container.innerHTML = '<p align="center" style="color:#999; padding:30px; font-size:1.1rem;">請輸入關鍵字開始搜尋...</p>'; 
-                return; 
-            }
-            const keywords = val.toLowerCase().replace(/\s+and\s+/g, ' ').split(/\s+/).filter(k => k.trim() !== '');
-            const filtered = allDataPageA.filter(r => {
-                const content = ((r['計畫名稱'] || '') + (r['工作內容'] || '') + (r['主管機關'] || '')).toLowerCase();
-                return keywords.every(k => content.includes(k));
-            });
-            displayUnifiedBlocks(filtered);
-        }
-
-        function processPageBData(data){
-            let totalCut=0,totalFreeze=0,totalBudget=0;let deptStats={};allDataPageB_Plans=[];
-            data.forEach(row=>{
-                const amount=parseMoney(row['預算金額']);const cut=parseMoney(row['刪減金額']);const freeze=parseMoney(row['凍結金額']);const dept=row['主管機關']||'其他';const type=row['資料類型']||'計畫';
-                totalBudget+=amount;totalCut+=cut;totalFreeze+=freeze;
-                if(!deptStats[dept])deptStats[dept]={name:dept,cut:0,freeze:0};deptStats[dept].cut+=cut;deptStats[dept].freeze+=freeze;
-                if(type==='計畫'){allDataPageB_Plans.push(row)}
-            });
-            const totalPass=totalBudget-totalCut-totalFreeze;
-            const ctxStatus = document.getElementById('chartStatusB');
-            
-            if (ctxStatus) {
-                if (chartStatusInstance) {
-                    chartStatusInstance.destroy();
-                }
-                chartStatusInstance = new Chart(ctxStatus.getContext('2d'),{type:'bar',data:{labels:['總體審查結果'],datasets:[{label:'通過',data:[totalPass],backgroundColor:'#086788',barThickness:40},{label:'凍結',data:[totalFreeze],backgroundColor:'#F0C808',barThickness:40},{label:'刪減',data:[totalCut],backgroundColor:'#E74C3C',barThickness:40}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,display:false},y:{stacked:true,display:false}},plugins:{legend:{position:'top'},tooltip:tooltipCurrencyCallback}}});
-            }
-            const deptArray=Object.values(deptStats);renderRankList('rank-dept-cut',[...deptArray].sort((a,b)=>b.cut-a.cut).slice(0,5),'cut');renderRankList('rank-dept-freeze',[...deptArray].sort((a,b)=>b.freeze-a.freeze).slice(0,5),'freeze');
-            const planArray=allDataPageB_Plans.map(r=>({name:r['計畫名稱'],cut:parseMoney(r['刪減金額']),freeze:parseMoney(r['凍結金額'])})).filter(r=>r.name);renderRankList('rank-plan-cut',[...planArray].sort((a,b)=>b.cut-a.cut).slice(0,5),'cut');renderRankList('rank-plan-freeze',[...planArray].sort((a,b)=>b.freeze-a.freeze).slice(0,5),'freeze');
-        }
-
-        function renderLegislatorGrid(data) {
-            const container = document.getElementById('leg-container-c');
-            if(!data || data.length === 0) { container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999;">無資料</p>'; return; }
-            
-            let html = '';
-            data.forEach(row => {
-                const name = row['委員姓名'] || '未知委員';
-                const party = row['黨籍'] || '無黨籍';
-                const photoPath = `./photos/${name}.jpg`;
-
-                let partyClass = 'tag-other';
-                if(party.includes('民進')) partyClass='tag-dpp';
-                else if(party.includes('國民')) partyClass='tag-kmt';
-                else if(party.includes('民眾')) partyClass='tag-tpp';
-                else if(party.includes('時代')) partyClass='tag-npp';
-
-                const rowStr = encodeURIComponent(JSON.stringify(row));
-                
-                // ★★★ object-position: center 25% 已套用 ★★★
-                html += `
-                <div class="leg-card" onclick="openDetailC('${rowStr}')">
-                    <div class="leg-avatar" id="avatar-${name}" style="position:relative; overflow:hidden;">
-                        <span class="default-icon" style="z-index:1;">🧑‍💼</span>
-                        <img src="${photoPath}" 
-                             style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; object-position: center 25%; display:none;" 
-                             onload="this.style.display='block'; this.previousElementSibling.style.display='none';"
-                             onerror="this.style.display='none';">
-                    </div>
-                    <div class="leg-name">${name}</div>
-                    <span class="leg-party-tag ${partyClass}">${party}</span>
-                    <div class="leg-stats-box">
-                        <div class="stat-item"><span class="stat-val" style="color:var(--danger-color);">${row['刪減案數']||0}</span><span class="stat-label">刪減案</span></div>
-                        <div class="stat-item"><span class="stat-val" style="color:var(--warning-color);">${row['凍結案數']||0}</span><span class="stat-label">凍結案</span></div>
-                        <div class="stat-item"><span class="stat-val" style="color:var(--secondary-color);">${row['主決議數']||0}</span><span class="stat-label">主決議</span></div>
-                    </div>
-                </div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        // ★★★ 關鍵修復：補回 renderProposalTable 函式 ★★★
-        function renderProposalTable(row){
-            const tbody=document.getElementById('proposal-table-body');
-            tbody.innerHTML='';
-            const proposalStr=row['提案紀錄']||'';
-            if(!proposalStr){tbody.innerHTML='<tr><td colspan="3" style="text-align:center">暫無詳細提案資料</td></tr>';return}
-            proposalStr.split('|').forEach(p=>{
-                const parts=p.split(':');
-                if(parts.length>=3){
-                    const typeClass=parts[1].includes('刪')?'p-cut':'p-freeze';
-                    const legName=parts[0].trim();
-                    const nameHtml=`<span class="clickable-link" onclick="jumpToC('${legName}')">${legName}</span>`;
-                    tbody.innerHTML+=`<tr><td><strong>${nameHtml}</strong></td><td><span class="p-tag ${typeClass}">${parts[1]}</span></td><td>${parts[2]}</td></tr>`
-                }
-            })
-        }
-
-        function renderLegislatorTables(detailStr) {
-            const tableCut = document.getElementById('table-cut-c');
-            const tableFreeze = document.getElementById('table-freeze-c');
-            tableCut.innerHTML = ''; tableFreeze.innerHTML = '';
-            if(!detailStr) {
-                const emptyRow = '<tr><td colspan="3" style="text-align:center; color:#999;">無詳細資料</td></tr>';
-                tableCut.innerHTML = emptyRow; tableFreeze.innerHTML = emptyRow; return;
-            }
-            const items = detailStr.split('|');
-            let hasCut = false, hasFreeze = false;
-            items.forEach(item => {
-                const parts = item.split('#');
-                if(parts.length >= 4) {
-                    const type = parts[0].trim();
-                    const projectId = parts[4] ? parts[4].trim() : '';
-                    let nameHtml = parts[1].trim();
-                    if(projectId) {
-                        nameHtml = `<span class="clickable-link" onclick="jumpToProjectB('${projectId}')">${nameHtml}</span>`;
-                    }
-                    const rowHtml = `<tr><td>${nameHtml}</td><td>${parts[2].trim()}</td><td>${parts[3].trim()}</td></tr>`;
-                    if(type.includes('刪')) { tableCut.innerHTML += rowHtml; hasCut = true; } 
-                    else if(type.includes('凍')) { tableFreeze.innerHTML += rowHtml; hasFreeze = true; }
-                }
-            });
-            if(!hasCut) tableCut.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#999;">無刪減提案</td></tr>';
-            if(!hasFreeze) tableFreeze.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#999;">無凍結提案</td></tr>';
-        }
-
-        function openDetailC(str) {
-            const row = JSON.parse(decodeURIComponent(str));
-            const modal = document.getElementById('detailModalC');
-            const name = row['委員姓名'];
-            
-            document.getElementById('mc-name').innerText = name;
-            document.getElementById('mc-party').innerText = row['黨籍'];
-            
-            let partyClass = 'tag-other';
-            const party = row['黨籍'] || '';
-            if(party.includes('民進')) partyClass='tag-dpp';
-            else if(party.includes('國民')) partyClass='tag-kmt';
-            else if(party.includes('民眾')) partyClass='tag-tpp';
-            else if(party.includes('時代')) partyClass='tag-npp';
-            document.getElementById('mc-party').className = `leg-party-tag ${partyClass}`;
-            
-            const photoPath = `./photos/${name}.jpg`;
-            const avatarDiv = document.getElementById('mc-avatar');
-            
-            // ★★★ object-position: center 25% 已套用 ★★★
-            avatarDiv.innerHTML = `
-                <span class="default-icon" style="z-index:1;">🧑‍💼</span>
-                <img src="${photoPath}" 
-                     style="width:100%; height:100%; object-fit:cover; object-position: center 25%; display:none; border-radius:50%;" 
-                     onload="this.style.display='block'; this.previousElementSibling.style.display='none';"
-                     onerror="this.style.display='none';">
-            `;
-            avatarDiv.style.backgroundImage = 'none';
-            avatarDiv.style.overflow = 'hidden'; 
-            avatarDiv.style.position = 'relative';
-
-            setTimeout(() => {
-                const legBody = document.querySelector('#detailModalC .leg-modal-body');
-                if (legBody) legBody.scrollTop = 0;
-            }, 0);
-            
-            renderLegislatorTables(row['提案明細'] || '');
-            modal.style.display = 'flex';
-        }
-
-        // ★★★ 更新後的 renderMainCharts (互動圖例 + SVG 指引線) ★★★
-        function renderMainCharts(){
-            if(mainChartsRendered) return;
-            
-            new Chart(document.getElementById('chartYearly').getContext('2d'),{
-                type:'bar',
-                data:{
-                    labels:['115年度','114年度','113年度','112年度','111年度','110年度','109年度','108年度','107年度','106年度'],
-                    datasets:[{
-                        label:'歲出總額',
-                        data:[3034974371000,3132468909000,2881782095000,2719098790000,2262064189000,2161517070000,2102196982000,2022029637000,1991773071000,1997995520000],
-                        backgroundColor:'#086788'
-                    }]
-                },
-                options:{
-                    responsive:true, maintainAspectRatio:false,
-                    plugins:{ tooltip: tooltipCurrencyCallback },
-                    scales: { y: { ticks: { callback: function(value) { return formatCurrency(value); } } } }
-                }
-            });
-
-            // 預算詳細資料 (用於點擊圖例後的顯示)
-            const budgetDetails = [
-                { label:'社會福利', value:831800000000, color:'rgba(231, 76, 60, 0.5)', arrow:'▲', display:'8318億' },
-                { label:'教育科學文化', value:556600000000, color:'rgba(240, 200, 8, 0.5)', arrow:'▼', display:'5566億' },
-                { label:'國防', value:548800000000, color:'rgba(8, 103, 136, 0.5)', arrow:'▲', display:'5488億' },
-                { label:'經濟發展', value:427500000000, color:'rgba(46, 204, 113, 0.5)', arrow:'▲', display:'4275億' },
-                { label:'一般政務', value:302600000000, color:'rgba(155, 89, 182, 0.5)', arrow:'▲', display:'3026億' },
-                { label:'退休撫卹', value:184400000000, color:'rgba(52, 152, 219, 0.5)', arrow:'▲', display:'1844億' },
-                { label:'債務還本付息', value:106300000000, color:'rgba(230, 126, 34, 0.5)', arrow:'–', display:'1063億' },
-                { label:'補助及其他', value:50400000000, color:'rgba(26, 188, 156, 0.5)', arrow:'▼', display:'504億' },
-                { label:'社區發展及環境保護', value:26600000000, color:'rgba(52, 73, 94, 0.5)', arrow:'▼', display:'266億' }
-            ];
-
-            const ctx = document.getElementById('chartAllocation').getContext('2d');
-            const totalBudget = budgetDetails.reduce((acc, curr) => acc + curr.value, 0);
-
-            // Chart Config - 關閉 Tooltip，改用外部控制
-            chartAllocationInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['115年度預算結構'],
-                    datasets: budgetDetails.map(d => ({
-                        label: d.label,
-                        data: [d.value],
-                        backgroundColor: d.color,
-                        barPercentage: 1.0,
-                        categoryPercentage: 1.0
-                    }))
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { 
-                        x: { stacked: true, display: false, min: 0, max: totalBudget },
-                        y: { stacked: true, display: false }
-                    },
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: { enabled: false } // 關閉預設 Tooltip
-                    },
-                    layout: { padding: 0 }
-                }
-            });
-            
-            // 產生互動式圖例
-            const legendContainer = document.getElementById('chartAllocationLegend');
-            const infoOverlay = document.getElementById('bill-info-overlay');
-            const arrowLine = document.getElementById('dynamic-arrow');
-            
-            if(legendContainer) {
-                let legendHtml = '';
-                budgetDetails.forEach((ds, index) => {
-                    let color = ds.color.replace('0.5', '1'); 
-                    legendHtml += `
-                        <div class="legend-item" onclick="updateBillOverlay(${index}, '${ds.label}', '${ds.display}', '${ds.arrow}')">
-                            <div class="legend-color-box" style="background-color:${color}; border:none;"></div>
-                            <span>${ds.label}</span>
-                        </div>
-                    `;
-                });
-                legendContainer.innerHTML = legendHtml;
-            }
-
-            // 定義更新 overlay 的函式
-            window.updateBillOverlay = function(index, label, display, arrow) {
-                // 更新文字
-                infoOverlay.innerHTML = `
-                    <p class="bill-info-text">${label} ${display} (${arrow})</p>
-                `;
-                
-                // 更新圖例 Active 狀態
-                document.querySelectorAll('.legend-item').forEach((el, i) => {
-                    if (i === index) el.classList.add('active');
-                    else el.classList.remove('active');
-                });
-
-                // ★★★ 繪製指引線 ★★★
-                if (!chartAllocationInstance) return;
-                
-                // 1. 同步 SVG 座標系與 Chart 內部座標系 (這步最關鍵，解決手機解析度問題)
-                const chart = chartAllocationInstance;
-                const svg = document.getElementById('pointer-layer');
-                svg.setAttribute('viewBox', `0 0 ${chart.width} ${chart.height}`);
-                
-                // 2. 取得目標 Bar 的座標
-                const meta = chart.getDatasetMeta(index);
-                const bar = meta.data[0]; 
-                
-                if (bar) {
-                    const targetX = (bar.x + bar.base) / 2;
-                    const targetY = bar.y - (bar.height / 2); // Bar 的頂端
-
-                    // 3. 取得 Info Box 的座標 (DOM 座標 -> 轉換為 Chart 內部座標)
-                    const containerRect = document.querySelector('.bill-container').getBoundingClientRect();
-                    const infoBoxRect = document.getElementById('bill-info-overlay').getBoundingClientRect();
-                    
-                    // 計算相對位置 (DOM 像素)
-                    const boxLeftRel = infoBoxRect.left - containerRect.left;
-                    const boxTopRel = infoBoxRect.top - containerRect.top;
-                    
-                    // 計算比例尺 (Chart 內部像素 / DOM 顯示像素)
-                    const scaleX = chart.width / containerRect.width;
-                    const scaleY = chart.height / containerRect.height;
-                    
-                    // 轉換 Info Box 座標到 Chart 座標系
-                    const startX = (boxLeftRel + (infoBoxRect.width / 2)) * scaleX;
-                    const startY = (boxTopRel + infoBoxRect.height) * scaleY; // 從 Box 底部出發
-
-                    // 4. 畫線 (SVG Path)
-                    const pathData = `M ${startX} ${startY} L ${targetX} ${targetY}`;
-                    arrowLine.setAttribute('d', pathData);
-                    arrowLine.style.opacity = '1';
-                }
-            };
-            
-            mainChartsRendered=true;
-        }
-
+        
+        // --- 3. UI Control Functions (Global) ---
         function showPage(pageId) {
             document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
             document.getElementById(pageId).classList.add('active');
@@ -799,37 +557,17 @@
             }
         }
 
-        // 監聽器
-        window.addEventListener('DOMContentLoaded', () => {
-            renderMainCharts();
-            Promise.all([
-                fetchData('page-a', true),
-                fetchData('page-b', true),
-                fetchData('page-c', true)
-            ]).then(() => {
-                if(isDemoMode) {
-                    document.querySelectorAll('.demo-mode-badge').forEach(el => el.style.display = 'block');
-                }
-            });
-        });
+        function closeModal(e,modalId){if(e&&e.target!==e.currentTarget&&e.target.className!=='close-btn')return;document.getElementById(modalId).style.display='none'}
 
-        // 監聽視窗大小改變，重置指引線
-        window.addEventListener('resize', () => {
-            const arrowLine = document.getElementById('dynamic-arrow');
-            if(arrowLine) arrowLine.style.opacity = '0';
-        });
-
+        // --- 4. Data Loading & Parsing ---
         function parseQueryResponse(jsonData) {
             const table = jsonData.table;
             const cols = table.cols.map(c => c.label).filter(l => l !== '');
             const rows = table.rows;
-            
             return rows.map(row => {
                 let obj = {};
                 row.c.forEach((cell, i) => {
-                    if (cols[i]) {
-                        obj[cols[i]] = cell ? (cell.v !== null ? String(cell.v) : '') : '';
-                    }
+                    if (cols[i]) obj[cols[i]] = cell ? (cell.v !== null ? String(cell.v) : '') : '';
                 });
                 return obj;
             });
@@ -882,18 +620,162 @@
                 
                 if (!silent) {
                     loader.style.display = 'none';
-                    if(errorDisplay) {
+                    if(errorDisplay && pageId === 'page-a') { 
                         errorDisplay.style.display = 'flex';
                         if (error.message.includes("Login Page")) {
-                            errorDisplay.innerHTML = `<div class="error-message"><h3>⚠️ 權限錯誤</h3><p>Google 試算表要求登入。</p><p>請務必將試算表共用權限設為「知道連結的任何人 (檢視者)」</p><p>並確認 FILE_ID 正確。</p></div>`;
-                        } else if (error.message.includes("404")) {
-                            errorDisplay.innerHTML = `<div class="error-message"><h3>⚠️ 找不到檔案</h3><p>請檢查程式碼中的 FILE_ID 是否正確。<br>(不是 2PACX 開頭的那個)</p></div>`;
+                            errorDisplay.innerHTML = `<div class="error-message"><h3>⚠️ 權限錯誤</h3><p>Google 試算表要求登入。</p></div>`;
+                        } else {
+                            errorDisplay.innerHTML = `<div class="error-message"><h3>⚠️ 連線失敗</h3><p>無法連線至資料庫。</p></div>`;
                         }
                     }
                     document.querySelectorAll('.demo-mode-badge').forEach(el => el.style.display = 'block');
                 }
                 return mockData;
             }
+        }
+
+        // --- 5. Data Processing Logic ---
+        function parseUsageString(usageStr) {
+            let breakdown = { '人事費':0, '業務費':0, '設備及投資':0, '獎補助費':0, '債務費':0, '預備金':0 };
+            if(!usageStr) return breakdown;
+            usageStr.split('|').forEach(item => {
+                const parts = item.split(':');
+                if(parts.length === 2) {
+                    let key = parts[0].trim();
+                    let val = parseMoney(parts[1]);
+                    if(key.includes('人事')) breakdown['人事費'] += val;
+                    else if(key.includes('業務')) breakdown['業務費'] += val;
+                    else if(key.includes('設備') || key.includes('投資')) breakdown['設備及投資'] += val;
+                    else if(key.includes('補助') || key.includes('獎助')) breakdown['獎補助費'] += val;
+                    else if(key.includes('債務')) breakdown['債務費'] += val;
+                    else if(key.includes('預備')) breakdown['預備金'] += val;
+                }
+            });
+            return breakdown;
+        }
+
+        function calculateAgencyStats(agencyName) {
+            const agencyProjects = allDataPageA.filter(p => p['主管機關'] === agencyName);
+            const agencyTotalBudget = agencyProjects.reduce((sum, p) => sum + parseMoney(p['預算金額']), 0);
+            
+            let agencyUsageTotal = { '人事費':0, '業務費':0, '設備及投資':0, '獎補助費':0, '債務費':0, '預備金':0 };
+            agencyProjects.forEach(p => {
+                const breakdown = parseUsageString(p['用途比例']);
+                for (let k in agencyUsageTotal) {
+                    agencyUsageTotal[k] += breakdown[k];
+                }
+            });
+
+            const agencyReviews = allDataPageB.filter(r => r['主管機關'] === agencyName);
+            let totalCut = 0, totalFreeze = 0;
+            agencyReviews.forEach(r => {
+                totalCut += parseMoney(r['刪減金額']);
+                totalFreeze += parseMoney(r['凍結金額']);
+            });
+
+            return {
+                totalBudget: agencyTotalBudget,
+                usageBreakdown: agencyUsageTotal,
+                totalCut: totalCut,
+                totalFreeze: totalFreeze
+            };
+        }
+
+        function processPageBData(data){
+            let totalCut=0,totalFreeze=0,totalBudget=0;let deptStats={};allDataPageB_Plans=[];
+            data.forEach(row=>{
+                const amount=parseMoney(row['預算金額']);const cut=parseMoney(row['刪減金額']);const freeze=parseMoney(row['凍結金額']);const dept=row['主管機關']||'其他';const type=row['資料類型']||'計畫';
+                totalBudget+=amount;totalCut+=cut;totalFreeze+=freeze;
+                if(!deptStats[dept])deptStats[dept]={name:dept,cut:0,freeze:0};deptStats[dept].cut+=cut;deptStats[dept].freeze+=freeze;
+                if(type==='計畫'){allDataPageB_Plans.push(row)}
+            });
+            const totalPass=totalBudget-totalCut-totalFreeze;
+            const ctxStatus = document.getElementById('chartStatusB');
+            
+            if (ctxStatus) {
+                if (chartStatusInstance) { chartStatusInstance.destroy(); }
+                chartStatusInstance = new Chart(ctxStatus.getContext('2d'),{type:'bar',data:{labels:['總體審查結果'],datasets:[{label:'通過',data:[totalPass],backgroundColor:'#086788',barThickness:40},{label:'凍結',data:[totalFreeze],backgroundColor:'#F0C808',barThickness:40},{label:'刪減',data:[totalCut],backgroundColor:'#E74C3C',barThickness:40}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,display:false},y:{stacked:true,display:false}},plugins:{legend:{position:'top'},tooltip:tooltipCurrencyCallback}}});
+            }
+            const deptArray=Object.values(deptStats);renderRankList('rank-dept-cut',[...deptArray].sort((a,b)=>b.cut-a.cut).slice(0,5),'cut');renderRankList('rank-dept-freeze',[...deptArray].sort((a,b)=>b.freeze-a.freeze).slice(0,5),'freeze');
+            const planArray=allDataPageB_Plans.map(r=>({name:r['計畫名稱'],cut:parseMoney(r['刪減金額']),freeze:parseMoney(r['凍結金額'])})).filter(r=>r.name);renderRankList('rank-plan-cut',[...planArray].sort((a,b)=>b.cut-a.cut).slice(0,5),'cut');renderRankList('rank-plan-freeze',[...planArray].sort((a,b)=>b.freeze-a.freeze).slice(0,5),'freeze');
+        }
+
+        // --- 6. Render Functions (Lists & Grids) ---
+        function renderRankList(elementId,list,type){const el=document.getElementById(elementId);if(!list||list.length===0){el.innerHTML='<li style="color:#999;">無資料</li>';return}let html='';list.forEach((item,index)=>{let val=type==='cut'?item.cut:item.freeze;let valDisplay=formatCurrency(val);let colorClass=type==='cut'?'color-cut':'color-freeze';html+=`<li><span><span class="rank-idx">${index+1}</span> ${item.name}</span><span class="rank-val ${colorClass}">${valDisplay}</span></li>`});el.innerHTML=html}
+
+        function displayUnifiedBlocks(data){
+            const container=document.getElementById('results-container-budget');
+            if(!data||data.length===0){
+                container.innerHTML='<p align="center" style="color:#999; padding:30px; font-size:1.1rem;">查無資料</p>';
+                return;
+            }
+            let html='';
+            data.forEach(row=>{
+                const id = row['計畫編號'];
+                const amountRaw=parseMoney(row['預算金額']);
+                html+=`<div class="project-block" onclick="openUnifiedDetail('${id}')">
+                    <div class="pb-info">
+                        <h3 class="pb-title">${row['計畫名稱']}</h3>
+                        <span class="pb-dept">${row['主管機關']}</span>
+                    </div>
+                    <div class="pb-amount">${formatCurrency(amountRaw)}</div>
+                </div>`;
+            });
+            container.innerHTML=html;
+        }
+
+        function handleSearchBudget(val) {
+            const container = document.getElementById('results-container-budget');
+            if (!val.trim()) { 
+                container.innerHTML = '<p align="center" style="color:#999; padding:30px; font-size:1.1rem;">請輸入關鍵字開始搜尋...</p>'; 
+                return; 
+            }
+            const keywords = val.toLowerCase().replace(/\s+and\s+/g, ' ').split(/\s+/).filter(k => k.trim() !== '');
+            const filtered = allDataPageA.filter(r => {
+                const content = ((r['計畫名稱'] || '') + (r['工作內容'] || '') + (r['主管機關'] || '')).toLowerCase();
+                return keywords.every(k => content.includes(k));
+            });
+            displayUnifiedBlocks(filtered);
+        }
+
+        function renderLegislatorGrid(data) {
+            const container = document.getElementById('leg-container-c');
+            if(!data || data.length === 0) { container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999;">無資料</p>'; return; }
+            
+            let html = '';
+            data.forEach(row => {
+                const name = row['委員姓名'] || '未知委員';
+                const party = row['黨籍'] || '無黨籍';
+                const photoPath = `./photos/${name}.jpg`;
+
+                let partyClass = 'tag-other';
+                if(party.includes('民進')) partyClass='tag-dpp';
+                else if(party.includes('國民')) partyClass='tag-kmt';
+                else if(party.includes('民眾')) partyClass='tag-tpp';
+                else if(party.includes('時代')) partyClass='tag-npp';
+
+                // 編碼整行資料，傳給 openDetailC
+                const rowStr = encodeURIComponent(JSON.stringify(row));
+                
+                html += `
+                <div class="leg-card" onclick="openDetailC('${rowStr}')">
+                    <div class="leg-avatar" id="avatar-${name}" style="position:relative; overflow:hidden;">
+                        <span class="default-icon" style="z-index:1;">🧑‍💼</span>
+                        <img src="${photoPath}" 
+                             style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; object-position: center 25%; display:none;" 
+                             onload="this.style.display='block'; this.previousElementSibling.style.display='none';"
+                             onerror="this.style.display='none';">
+                    </div>
+                    <div class="leg-name">${name}</div>
+                    <span class="leg-party-tag ${partyClass}">${party}</span>
+                    <div class="leg-stats-box">
+                        <div class="stat-item"><span class="stat-val" style="color:var(--danger-color);">${row['刪減案數']||0}</span><span class="stat-label">刪減案</span></div>
+                        <div class="stat-item"><span class="stat-val" style="color:var(--warning-color);">${row['凍結案數']||0}</span><span class="stat-label">凍結案</span></div>
+                        <div class="stat-item"><span class="stat-val" style="color:var(--secondary-color);">${row['主決議數']||0}</span><span class="stat-label">主決議</span></div>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = html;
         }
 
         function filterLegislators(party) {
@@ -907,55 +789,251 @@
             renderLegislatorGrid(filtered);
         }
 
-        let chartBarA = null, chartPieA = null, chartB1 = null, chartB2 = null;
-        function openUnifiedDetail(id) {
-            const planData = allDataPageA.find(r => r['計畫編號'] === id);
-            const reviewData = allDataPageB.find(r => r['計畫編號'] === id);
-            if (!planData && !reviewData) { alert("資料讀取錯誤：找不到該計畫 (請檢查計畫編號是否正確)"); return; }
-            const baseData = planData || reviewData; 
-            document.getElementById('u-title').innerText = baseData['計畫名稱'];
-            document.getElementById('u-dept').innerText = baseData['主管機關'];
-            document.getElementById('u-amount').innerText = formatCurrency(parseMoney(baseData['預算金額']));
-            
-            if (planData) {
-                document.getElementById('u-desc').innerText = planData['工作內容'] || '無';
-                document.getElementById('u-desc-container').classList.remove('expanded');
-                document.getElementById('toggle-desc-btn').innerText = '展開閱讀全文';
-                if(chartBarA) chartBarA.destroy(); if(chartPieA) chartPieA.destroy();
-                renderDetailChartsA(planData);
-            } else { document.getElementById('u-desc').innerText = '此計畫無詳細編列內容資料。'; }
-            
-            const reviewContainer = document.getElementById('review-data-container');
-            const reviewNoData = document.getElementById('review-no-data');
-            if (reviewData) {
-                reviewContainer.style.display = 'block'; reviewNoData.style.display = 'none';
-                if(chartB1) chartB1.destroy(); if(chartB2) chartB2.destroy();
-                renderDetailChartsB(reviewData); 
-                renderProposalTable(reviewData);
-            } else { reviewContainer.style.display = 'none'; reviewNoData.style.display = 'block'; }
-            
-            setTimeout(() => {
-                const modalBody = document.querySelector('#unifiedModal .modal-body-area');
-                if (modalBody) modalBody.scrollTop = 0;
-            }, 0);
-
-            switchTab('plan'); document.getElementById('unifiedModal').style.display = 'flex';
+        // --- 7. Main Dashboard (Ministry) Functions ---
+        function initMinistrySection() {
+            const ministrySelect = document.getElementById('filter-ministry');
+            if(!allDataPageA || allDataPageA.length === 0) return;
+            const ministries = [...new Set(allDataPageA.map(item => item['所屬部會']))].filter(m => m).sort();
+            let html = '<option value="">請選擇所屬部會</option>';
+            ministries.forEach(m => { html += `<option value="${m}">${m}</option>`; });
+            ministrySelect.innerHTML = html;
         }
-        
-        function switchTab(tabName) {
-            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            if (tabName === 'plan') {
-                document.querySelector('.modal-tab:first-child').classList.add('active');
-                document.getElementById('tab-content-plan').classList.add('active');
+
+        function updateMinistryStats() {
+            const selectedMinistry = document.getElementById('filter-ministry').value;
+            const unitSelect = document.getElementById('filter-unit');
+            
+            if (selectedMinistry) {
+                 const agencies = [...new Set(allDataPageA
+                    .filter(d => d['所屬部會'] === selectedMinistry)
+                    .map(d => d['主管機關']))]
+                    .filter(a => a).sort();
+                 
+                 const lastMinistry = unitSelect.getAttribute('data-last-ministry');
+                 if (lastMinistry !== selectedMinistry) {
+                     let html = '<option value="">全部主管機關 (總計)</option>';
+                     agencies.forEach(a => { html += `<option value="${a}">${a}</option>`; });
+                     unitSelect.innerHTML = html;
+                     unitSelect.value = ""; 
+                     unitSelect.setAttribute('data-last-ministry', selectedMinistry);
+                 }
             } else {
-                document.querySelector('.modal-tab:last-child').classList.add('active');
-                document.getElementById('tab-content-review').classList.add('active');
+                 unitSelect.innerHTML = '<option value="">請選擇主管機關 (全部)</option>';
+                 unitSelect.value = "";
             }
-            setTimeout(() => {
-                const modalBody = document.querySelector('#unifiedModal .modal-body-area');
-                if (modalBody) modalBody.scrollTop = 0;
-            }, 0);
+
+            const selectedAgency = unitSelect.value;
+            let currentData = [];
+            if (selectedMinistry) {
+                if (selectedAgency) { currentData = allDataPageA.filter(d => d['主管機關'] === selectedAgency); } 
+                else { currentData = allDataPageA.filter(d => d['所屬部會'] === selectedMinistry); }
+            } else {
+                document.getElementById('val-this-year').innerText = '-';
+                document.getElementById('val-last-year').innerText = '-';
+                document.getElementById('val-growth').innerText = '-';
+                if(chartMinistryBar) chartMinistryBar.destroy();
+                if(chartMinistryPie) chartMinistryPie.destroy();
+                return;
+            }
+
+            let totalThisYear = 0, totalLastYear = 0;
+            let pieMap = {}; 
+
+            currentData.forEach(d => {
+                const thisYear = parseMoney(d['預算金額']);
+                const lastYear = parseMoney(d['114年預算金額'] || 0);
+                totalThisYear += thisYear;
+                totalLastYear += lastYear;
+                const category = d['政事別'] || '其他';
+                pieMap[category] = (pieMap[category] || 0) + thisYear;
+            });
+
+            const pieLabels = Object.keys(pieMap);
+            const pieData = Object.values(pieMap);
+            const pieColors = pieLabels.map(label => getColorByType(label));
+
+            let growth = 0;
+            if (totalLastYear > 0) { growth = ((totalThisYear - totalLastYear) / totalLastYear) * 100; }
+            
+            document.getElementById('val-this-year').innerText = formatCurrency(totalThisYear);
+            document.getElementById('val-last-year').innerText = formatCurrency(totalLastYear);
+            const growthEl = document.getElementById('val-growth');
+            if (totalLastYear === 0) { growthEl.innerText = "無去年資料"; growthEl.className = 'm-stat-val'; } 
+            else { 
+                 growthEl.innerText = (growth > 0 ? '+' : '') + growth.toFixed(1) + '%';
+                 growthEl.className = 'm-stat-val ' + (growth > 0 ? 'm-trend-up' : 'm-trend-down');
+            }
+
+            const ctxBar = document.getElementById('chartMinistryBar').getContext('2d');
+            if(chartMinistryBar) chartMinistryBar.destroy();
+            chartMinistryBar = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['今年預算', '去年預算'],
+                    datasets: [{ label: '金額', data: [totalThisYear, totalLastYear], backgroundColor: ['#086788', '#bdc3c7'], barThickness: 40 }]
+                },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: tooltipCurrencyCallback }, scales: { x: { ticks: { callback: function(value) { return formatCurrency(value); } } } } }
+            });
+
+            const ctxPie = document.getElementById('chartMinistryPie').getContext('2d');
+            if(chartMinistryPie) chartMinistryPie.destroy();
+            chartMinistryPie = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: pieColors }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position:'bottom', labels: { boxWidth: 12 } }, tooltip: tooltipCurrencyCallback } }
+            });
+        }
+
+        // --- 8. Chart Rendering Functions ---
+        
+        function renderProposalTable(data) {
+            const container = document.getElementById('proposal-table-body');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            let proposalsStr = data['提案紀錄'] || ''; 
+            if(!proposalsStr) {
+                container.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#999;">無提案紀錄</td></tr>';
+                return;
+            }
+
+            let rows = '';
+            proposalsStr.split('|').forEach(p => {
+                let parts = p.split(':');
+                if(parts.length >= 3) {
+                    const name = parts[0].trim();
+                    const type = parts[1].trim();
+                    const reason = parts[2].trim();
+                    
+                    const linkHtml = `<span class="clickable-link" onclick="jumpToC('${name}')">${name}</span>`;
+
+                    rows += `<tr>
+                        <td>${linkHtml}</td>
+                        <td><span class="p-tag ${type.includes('刪')?'p-cut':'p-freeze'}">${type}</span></td>
+                        <td>${reason}</td>
+                    </tr>`;
+                } else {
+                     rows += `<tr><td colspan="3">${p}</td></tr>`;
+                }
+            });
+            container.innerHTML = rows;
+        }
+
+        function renderDetailChartsA(row){
+            let subLabels=[],subData=[];
+            let branchString=row['分支計畫']||'';
+            if(branchString&&branchString.includes(':')){
+                branchString.split('|').forEach(item=>{
+                    let parts=item.split(':');
+                    if(parts.length===2){subLabels.push(parts[0].trim());subData.push(parseMoney(parts[1].trim()))}
+                })
+            }
+            let pieLabels=[],pieData=[];
+            let usageString=row['用途比例']||'';
+            if(usageString&&usageString.includes(':')){
+                usageString.split('|').forEach(item=>{
+                    let parts=item.split(':');
+                    if(parts.length===2){pieLabels.push(parts[0].trim());pieData.push(parseInt(parts[1].trim()))}
+                })
+            }
+            
+            const ctxBar=document.getElementById('chartDetailBar').getContext('2d');
+            if(chartBarA) chartBarA.destroy();
+            chartBarA=new Chart(ctxBar,{type:'bar',data:{labels:subLabels,datasets:[{label:'金額',data:subData,backgroundColor:'#086788',borderRadius:4}]},options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:tooltipCurrencyCallback}}});
+            
+            const ctxPie=document.getElementById('chartDetailPie').getContext('2d');
+            if(chartPieA) chartPieA.destroy();
+            chartPieA=new Chart(ctxPie,{type:'pie',data:{labels:pieLabels,datasets:[{data:pieData,backgroundColor:['#E74C3C','#F0C808','#086788','#2ECC71','#9B59B6']}]},options:{maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:tooltipCurrencyCallback}}});
+        }
+
+        function renderDetailChartsB(row){
+            const total=parseMoney(row['預算金額']);
+            const cut=parseMoney(row['刪減金額']);
+            const freeze=parseMoney(row['凍結金額']);
+            const pass=total-cut-freeze;
+            
+            const ctx1=document.getElementById('chartBResult').getContext('2d');
+            if(chartB1) chartB1.destroy();
+            chartB1=new Chart(ctx1,{type:'bar',data:{labels:['結果'],datasets:[{label:'通過',data:[pass],backgroundColor:'#086788'},{label:'凍結',data:[freeze],backgroundColor:'#F0C808'},{label:'刪減',data:[cut],backgroundColor:'#E74C3C'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true}},plugins:{tooltip:tooltipCurrencyCallback}}});
+            
+            const cCut = parseMoney(row['委員會刪減']);
+            const cFreeze = parseMoney(row['委員會凍結']);
+            const nCut = parseMoney(row['院會表決刪減'] || row['協商刪減']); 
+            const nFreeze = parseMoney(row['院會表決凍結'] || row['協商凍結']);
+            const fCut = parseMoney(row['通案刪減'] || row['院會刪減']); 
+            const fFreeze = parseMoney(row['通案凍結'] || row['院會凍結']);
+
+            const ctx2=document.getElementById('chartBStages').getContext('2d');
+            if(chartB2) chartB2.destroy();
+            chartB2=new Chart(ctx2,{type:'bar',data:{
+                labels:['委員會','院會表決','通案'],
+                datasets:[{label:'刪減',data:[cCut,nCut,fCut],backgroundColor:'#E74C3C'},{label:'凍結',data:[cFreeze,nFreeze,fFreeze],backgroundColor:'#F0C808'}]
+            },options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:tooltipCurrencyCallback}}});
+        }
+
+        function renderMainCharts(){
+            if(mainChartsRendered) return;
+            new Chart(document.getElementById('chartYearly').getContext('2d'),{ type:'bar', data:{ labels:['115年度','114年度','113年度','112年度','111年度','110年度','109年度','108年度','107年度','106年度'], datasets:[{ label:'歲出總額', data:[3034974371000,3132468909000,2881782095000,2719098790000,2262064189000,2161517070000,2102196982000,2022029637000,1991773071000,1997995520000], backgroundColor:'#086788' }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ tooltip: tooltipCurrencyCallback }, scales: { y: { ticks: { callback: function(value) { return formatCurrency(value); } } } } } });
+
+            const budgetDetails = [
+                { label:'社會福利', value:831800000000, color:'rgba(231, 76, 60, 0.5)', arrow:'▲', display:'8318億' },
+                { label:'教育科學文化', value:556600000000, color:'rgba(240, 200, 8, 0.5)', arrow:'▼', display:'5566億' },
+                { label:'國防', value:548800000000, color:'rgba(8, 103, 136, 0.5)', arrow:'▲', display:'5488億' },
+                { label:'經濟發展', value:427500000000, color:'rgba(46, 204, 113, 0.5)', arrow:'▲', display:'4275億' },
+                { label:'一般政務', value:302600000000, color:'rgba(155, 89, 182, 0.5)', arrow:'▲', display:'3026億' },
+                { label:'退休撫卹', value:184400000000, color:'rgba(52, 152, 219, 0.5)', arrow:'▲', display:'1844億' },
+                { label:'債務還本付息', value:106300000000, color:'rgba(230, 126, 34, 0.5)', arrow:'–', display:'1063億' },
+                { label:'補助及其他', value:50400000000, color:'rgba(26, 188, 156, 0.5)', arrow:'▼', display:'504億' },
+                { label:'社區發展及環境保護', value:26600000000, color:'rgba(52, 73, 94, 0.5)', arrow:'▼', display:'266億' }
+            ];
+
+            const ctx = document.getElementById('chartAllocation').getContext('2d');
+            const totalBudget = budgetDetails.reduce((acc, curr) => acc + curr.value, 0);
+
+            chartAllocationInstance = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: ['115年度預算結構'], datasets: budgetDetails.map(d => ({ label: d.label, data: [d.value], backgroundColor: d.color, barPercentage: 1.0, categoryPercentage: 1.0 })) },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, display: false, min: 0, max: totalBudget }, y: { stacked: true, display: false } }, plugins: { legend: { display: false }, tooltip: { enabled: false } }, layout: { padding: 0 } }
+            });
+            
+            const legendContainer = document.getElementById('chartAllocationLegend');
+            if(legendContainer) {
+                let legendHtml = '';
+                budgetDetails.forEach((ds, index) => {
+                    let color = ds.color.replace('0.5', '1'); 
+                    legendHtml += `<div class="legend-item" onclick="updateBillOverlay(${index}, '${ds.label}', '${ds.display}', '${ds.arrow}')"><div class="legend-color-box" style="background-color:${color}; border:none;"></div><span>${ds.label}</span></div>`;
+                });
+                legendContainer.innerHTML = legendHtml;
+            }
+
+            window.updateBillOverlay = function(index, label, display, arrow) {
+                const infoOverlay = document.getElementById('bill-info-overlay');
+                const arrowLine = document.getElementById('dynamic-arrow');
+                infoOverlay.innerHTML = `<p class="bill-info-text">${label} ${display} (${arrow})</p>`;
+                document.querySelectorAll('.legend-item').forEach((el, i) => { if (i === index) el.classList.add('active'); else el.classList.remove('active'); });
+
+                if (!chartAllocationInstance) return;
+                
+                const meta = chartAllocationInstance.getDatasetMeta(index);
+                const bar = meta.data[0]; 
+                
+                if (bar) {
+                    const targetX = (bar.x + bar.base) / 2;
+                    const targetY = bar.y - (bar.height / 2);
+                    const containerRect = document.querySelector('.bill-container').getBoundingClientRect();
+                    const infoBoxRect = document.getElementById('bill-info-overlay').getBoundingClientRect();
+                    const boxLeftRel = infoBoxRect.left - containerRect.left;
+                    const boxTopRel = infoBoxRect.top - containerRect.top;
+                    const scaleX = chartAllocationInstance.width / containerRect.width;
+                    const scaleY = chartAllocationInstance.height / containerRect.height;
+                    const startX = (boxLeftRel + (infoBoxRect.width / 2)) * scaleX;
+                    const startY = (boxTopRel + infoBoxRect.height) * scaleY;
+                    const pathData = `M ${startX} ${startY} L ${targetX} ${targetY}`;
+                    arrowLine.setAttribute('d', pathData);
+                    arrowLine.style.opacity = '1';
+                }
+            };
+            mainChartsRendered=true;
         }
 
         async function jumpToProjectB(projectId) {
@@ -978,60 +1056,248 @@
             else { alert(`查無此委員資料 (${targetName})`); }
         }
 
-        function closeModal(e,modalId){if(e&&e.target!==e.currentTarget&&e.target.className!=='close-btn')return;document.getElementById(modalId).style.display='none'}
-
-        function renderDetailChartsA(row){
-            let subLabels=[],subData=[];
-            let branchString=row['分支計畫']||'';
-            if(branchString&&branchString.includes(':')){
-                branchString.split('|').forEach(item=>{
-                    let parts=item.split(':');
-                    if(parts.length===2){subLabels.push(parts[0].trim());subData.push(parseMoney(parts[1].trim()))}
-                })
+        function switchTab(tabName) {
+            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            if (tabName === 'plan') {
+                document.querySelector('.modal-tab:first-child').classList.add('active');
+                document.getElementById('tab-content-plan').classList.add('active');
+            } else {
+                document.querySelector('.modal-tab:last-child').classList.add('active');
+                document.getElementById('tab-content-review').classList.add('active');
             }
-            let pieLabels=[],pieData=[];
-            let usageString=row['用途比例']||'';
-            if(usageString&&usageString.includes(':')){
-                usageString.split('|').forEach(item=>{
-                    let parts=item.split(':');
-                    if(parts.length===2){pieLabels.push(parts[0].trim());pieData.push(parseInt(parts[1].trim()))}
-                })
-            }
-            const ctxBar=document.getElementById('chartDetailBar').getContext('2d');
-            chartBarA=new Chart(ctxBar,{type:'bar',data:{labels:subLabels,datasets:[{label:'金額',data:subData,backgroundColor:'#086788',borderRadius:4}]},options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:tooltipCurrencyCallback}}});
-            const ctxPie=document.getElementById('chartDetailPie').getContext('2d');
-            chartPieA=new Chart(ctxPie,{type:'pie',data:{labels:pieLabels,datasets:[{data:pieData,backgroundColor:['#E74C3C','#F0C808','#086788','#2ECC71','#9B59B6']}]},options:{maintainAspectRatio:false,plugins:{legend:{position:'bottom'},tooltip:tooltipCurrencyCallback}}});
+            setTimeout(() => {
+                const modalBody = document.querySelector('#unifiedModal .modal-body-area');
+                if (modalBody) modalBody.scrollTop = 0;
+            }, 0);
         }
 
-        function renderDetailChartsB(row){
-            const total=parseMoney(row['預算金額']);
-            const cut=parseMoney(row['刪減金額']);
-            const freeze=parseMoney(row['凍結金額']);
-            const pass=total-cut-freeze;
+        // --- 9. Modal Logic & Data Binding ---
+        function openUnifiedDetail(id) {
+            const planData = allDataPageA.find(r => r['計畫編號'] === id);
+            const reviewData = allDataPageB.find(r => r['計畫編號'] === id);
+            if (!planData && !reviewData) { alert("資料讀取錯誤：找不到該計畫 (請檢查計畫編號是否正確)"); return; }
+            const baseData = planData || reviewData; 
             
-            const ctx1=document.getElementById('chartBResult').getContext('2d');
-            chartB1=new Chart(ctx1,{type:'bar',data:{labels:['結果'],datasets:[{label:'通過',data:[pass],backgroundColor:'#086788'},{label:'凍結',data:[freeze],backgroundColor:'#F0C808'},{label:'刪減',data:[cut],backgroundColor:'#E74C3C'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true}},plugins:{tooltip:tooltipCurrencyCallback}}});
+            document.getElementById('u-title').innerText = baseData['計畫名稱'];
+            document.getElementById('u-dept').innerText = baseData['主管機關'];
+            document.getElementById('u-amount').innerText = formatCurrency(parseMoney(baseData['預算金額']));
             
-            // ★★★ 雙保險讀取法：如果找不到新欄位，就嘗試讀取舊欄位 ★★★
-            
-            // 1. 委員會階段
-            const cCut = parseMoney(row['委員會刪減']);
-            const cFreeze = parseMoney(row['委員會凍結']);
-            
-            // 2. 院會表決階段 (原: 協商)
-            const nCut = parseMoney(row['院會表決刪減'] || row['協商刪減']); 
-            const nFreeze = parseMoney(row['院會表決凍結'] || row['協商凍結']);
-            
-            // 3. 通案階段 (原: 院會)
-            const fCut = parseMoney(row['通案刪減'] || row['院會刪減']); 
-            const fFreeze = parseMoney(row['通案凍結'] || row['院會凍結']);
+            if (planData) {
+                document.getElementById('u-desc').innerText = planData['工作內容'] || '無';
+                document.getElementById('u-desc-container').classList.remove('expanded');
+                document.getElementById('toggle-desc-btn').innerText = '展開閱讀全文';
 
-            const ctx2=document.getElementById('chartBStages').getContext('2d');
-            chartB2=new Chart(ctx2,{type:'bar',data:{
-                labels:['委員會','院會表決','通案'],
-                datasets:[{label:'刪減',data:[cCut,nCut,fCut],backgroundColor:'#E74C3C'},{label:'凍結',data:[cFreeze,nFreeze,fFreeze],backgroundColor:'#F0C808'}]
-            },options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:tooltipCurrencyCallback}}});
+                // renderDetailChartsA 內部已經會自己銷毀 chartBarA 和 chartPieA 了，這裡不用再呼叫 destroy
+                renderDetailChartsA(planData);
+                
+                const agencyName = planData['主管機關'];
+                const agencyStats = calculateAgencyStats(agencyName);
+                const projectBudget = parseMoney(planData['預算金額']);
+                const projectUsage = parseUsageString(planData['用途比例']);
+
+                if(chartModalPlanRatio) chartModalPlanRatio.destroy();
+                const ctxRatio = document.getElementById('chartModalPlanRatio').getContext('2d');
+                
+                // [修改 1] 計算總佔比並更新下方文字
+                const totalRatio = (agencyStats.totalBudget > 0) ? (projectBudget / agencyStats.totalBudget * 100).toFixed(2) : 0;
+                document.getElementById('caption-plan-ratio').innerText = `本計畫金額占${agencyName}預算 ${totalRatio}%`;
+
+                chartModalPlanRatio = new Chart(ctxRatio, {
+                    type: 'bar',
+                    data: {
+                        labels: ['金額'],
+                        datasets: [
+                            { label: '本計畫', data: [projectBudget], backgroundColor: '#E74C3C', stack: 'Stack 0' },
+                            { label: '機關其他', data: [agencyStats.totalBudget - projectBudget], backgroundColor: '#ecf0f1', stack: 'Stack 0' }
+                        ]
+                    },
+                    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, display: false }, y: { display: false, stacked: true } }, plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback } }
+                });
+
+                if(chartModalCatRatio) chartModalCatRatio.destroy();
+                const ctxCat = document.getElementById('chartModalCatRatio').getContext('2d');
+                const catLabels = ['人事費', '業務費', '設備及投資', '獎補助費', '債務費', '預備金'];
+                const projectCatData = catLabels.map(k => projectUsage[k]);
+                const restCatData = catLabels.map(k => (agencyStats.usageBreakdown[k] || 0) - (projectUsage[k] || 0));
+
+                // [修改 2] 預設提示文字
+                const captionEl = document.getElementById('caption-cat-ratio');
+                captionEl.innerText = "請滑鼠移至(或點擊)該類別的整行區域即可查看";
+
+                chartModalCatRatio = new Chart(ctxCat, {
+                    type: 'bar',
+                    data: {
+                        labels: catLabels,
+                        datasets: [
+                            { label: '本計畫', data: projectCatData, backgroundColor: '#E74C3C', stack: 'Stack 0' },
+                            { label: '機關其他', data: restCatData, backgroundColor: '#ecf0f1', stack: 'Stack 0' }
+                        ]
+                    },
+                    options: { 
+                        indexAxis: 'y', 
+                        responsive: true, 
+                        maintainAspectRatio: false, 
+                        // [新增] 擴大感應區設定
+                        interaction: {
+                            mode: 'index',
+                            axis: 'y',
+                            intersect: false
+                        },
+                        scales: { x: { stacked: true, ticks: { callback: function(value) { return formatCurrency(value); } } }, y: { stacked: true } }, 
+                        plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback },
+                        // [新增] onHover 事件，動態更新下方文字
+                        onHover: function(e, activeEls) {
+                            if (!activeEls || activeEls.length === 0) return;
+                            const idx = activeEls[0].index;
+                            const label = this.data.labels[idx]; // 類別名稱 (如: 人事費)
+                            const pVal = projectCatData[idx];
+                            const totalVal = agencyStats.usageBreakdown[label];
+                            const pct = (totalVal > 0) ? (pVal / totalVal * 100).toFixed(2) : 0;
+                            
+                            captionEl.innerHTML = `本計畫<b>${label}</b>占<b>${agencyName}${label}</b>預算 <b>${pct}%</b>`;
+                        }
+                    }
+                });
+
+            } else { document.getElementById('u-desc').innerText = '此計畫無詳細編列內容資料。'; }
+            
+            const reviewContainer = document.getElementById('review-data-container');
+            const reviewNoData = document.getElementById('review-no-data');
+            if (reviewData) {
+                reviewContainer.style.display = 'block'; reviewNoData.style.display = 'none';
+                
+                // renderDetailChartsB 內部已經會自己銷毀 chartB1 和 chartB2 了
+                renderDetailChartsB(reviewData); 
+                renderProposalTable(reviewData);
+
+                const agencyName = reviewData['主管機關'];
+                const agencyStats = calculateAgencyStats(agencyName);
+                
+                if(chartModalAgencyReview) chartModalAgencyReview.destroy();
+                const ctxAgencyRev = document.getElementById('chartModalAgencyReview').getContext('2d');
+                const totalPass = agencyStats.totalBudget - agencyStats.totalCut - agencyStats.totalFreeze;
+                
+                chartModalAgencyReview = new Chart(ctxAgencyRev, {
+                    type: 'bar',
+                    data: {
+                        labels: ['機關整體'],
+                        datasets: [
+                            { label: '通過', data: [totalPass], backgroundColor: '#086788', barThickness: 30 },
+                            { label: '凍結', data: [agencyStats.totalFreeze], backgroundColor: '#F0C808', barThickness: 30 },
+                            { label: '刪減', data: [agencyStats.totalCut], backgroundColor: '#E74C3C', barThickness: 30 }
+                        ]
+                    },
+                    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, display: false }, y: { stacked: true, display: false } }, plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback } }
+                });
+
+            } else { reviewContainer.style.display = 'none'; reviewNoData.style.display = 'block'; }
+            
+            setTimeout(() => {
+                const modalBody = document.querySelector('#unifiedModal .modal-body-area');
+                if (modalBody) modalBody.scrollTop = 0;
+            }, 0);
+
+            switchTab('plan'); document.getElementById('unifiedModal').style.display = 'flex';
         }
+
+        // [修復] 這裡加入了黨籍顏色判斷邏輯
+        function openDetailC(jsonStr) {
+            const data = JSON.parse(decodeURIComponent(jsonStr));
+            
+            document.getElementById('mc-name').innerText = data['委員姓名'] || '-';
+            
+            // 1. 取得黨籍字串
+            const party = data['黨籍'] || '無黨籍';
+            const partyEl = document.getElementById('mc-party');
+            partyEl.innerText = party;
+
+            // 2. 判斷對應的顏色 Class (與列表頁邏輯一致)
+            let partyClass = 'tag-other';
+            if(party.includes('民進')) partyClass='tag-dpp';
+            else if(party.includes('國民')) partyClass='tag-kmt';
+            else if(party.includes('民眾')) partyClass='tag-tpp';
+            else if(party.includes('時代')) partyClass='tag-npp';
+            
+            // 3. 設定 Class (基礎樣式 + 顏色樣式)
+            partyEl.className = `leg-party-tag ${partyClass}`;
+
+            // 4. 處理頭像
+            const avatarEl = document.getElementById('mc-avatar');
+            avatarEl.innerHTML = ''; 
+            const imgPath = `./photos/${data['委員姓名']}.jpg`;
+            
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'default-icon';
+            iconSpan.style.zIndex = '1';
+            iconSpan.innerText = '🧑‍💼';
+            
+            const imgEl = document.createElement('img');
+            imgEl.src = imgPath;
+            imgEl.style.position = 'absolute';
+            imgEl.style.top = '0'; imgEl.style.left = '0';
+            imgEl.style.width = '100%'; imgEl.style.height = '100%';
+            imgEl.style.objectFit = 'cover'; imgEl.style.objectPosition = 'center 25%';
+            imgEl.style.display = 'none'; 
+            
+            imgEl.onload = function() { this.style.display = 'block'; iconSpan.style.display = 'none'; };
+            imgEl.onerror = function() { this.style.display = 'none'; };
+            
+            avatarEl.appendChild(iconSpan);
+            avatarEl.appendChild(imgEl);
+
+            const details = data['提案明細'] || '';
+            const cutsTbody = document.getElementById('table-cut-c');
+            const freezesTbody = document.getElementById('table-freeze-c');
+            cutsTbody.innerHTML = ''; freezesTbody.innerHTML = '';
+            
+            if(!details) {
+                 cutsTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">無資料</td></tr>';
+                 freezesTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">無資料</td></tr>';
+            } else {
+                 details.split('|').forEach(item => {
+                    const parts = item.split('#');
+                    if(parts.length >= 4) {
+                        const btnHtml = parts[4] ? `<br><button class="jump-btn" onclick="jumpToProjectB('${parts[4]}')">查看計畫</button>` : '';
+                        
+                        const rowHtml = `<tr>
+                            <td>${parts[1]}${btnHtml}</td>
+                            <td>${parts[2]}</td>
+                            <td>${parts[3]}</td>
+                        </tr>`;
+                        
+                        if(parts[0].includes('刪減')) cutsTbody.innerHTML += rowHtml;
+                        else freezesTbody.innerHTML += rowHtml;
+                    }
+                });
+            }
+            
+            if(cutsTbody.innerHTML === '') cutsTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#999">無刪減提案</td></tr>';
+            if(freezesTbody.innerHTML === '') freezesTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#999">無凍結提案</td></tr>';
+
+            document.getElementById('detailModalC').style.display = 'flex';
+        }
+
+        // --- 10. Event Listeners ---
+        window.addEventListener('DOMContentLoaded', () => {
+            renderMainCharts();
+            Promise.all([
+                fetchData('page-a', true),
+                fetchData('page-b', true),
+                fetchData('page-c', true)
+            ]).then(() => {
+                if(!isDemoMode && allDataPageA.length > 5) {
+                    initMinistrySection();
+                } else {
+                    document.querySelectorAll('.demo-mode-badge').forEach(el => el.style.display = 'block');
+                }
+            });
+        });
+
+        window.addEventListener('resize', () => {
+            const arrowLine = document.getElementById('dynamic-arrow');
+            if(arrowLine) arrowLine.style.opacity = '0';
+        });
     </script>
 </body>
 </html>
