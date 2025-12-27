@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v104 互動優化版)</title>
+    <title>中央政府總預算觀測站 (v109 排版精修版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -46,12 +46,50 @@
         .card h3::before { content:''; position: absolute; left:-1.5rem; top: 5px; height: 1.2em; width: 6px; background: var(--secondary-color); border-radius: 0 4px 4px 0;}
         .chart-container { position: relative; height: 350px; width: 100%; }
 
-        /* Bill Container */
-        .bill-container { position: relative; width: 100%; aspect-ratio: 16 / 7; background-image: url('1000.png'); background-size: 100% 100%; background-position: center; background-repeat: no-repeat; border-radius: 8px; box-shadow: 0 6px 15px rgba(0,0,0,0.1); padding: 0; overflow: hidden; border: 2px solid var(--secondary-color); box-sizing: border-box; }
-        .bill-container canvas { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; display: block; z-index: 1; }
-        .bill-svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
+        /* Bill Container (v108+ Logic) */
+        .bill-container { 
+            position: relative; 
+            width: 100%; 
+            aspect-ratio: 16 / 7; 
+            padding: 0; 
+            overflow: visible !important; 
+            box-sizing: border-box; 
+            margin-bottom: 5px; 
+        }
+        
+        .bill-visuals {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('1000.png'); 
+            background-size: 100% 100%; 
+            background-position: center; 
+            background-repeat: no-repeat; 
+            border-radius: 8px; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1); 
+            border: 2px solid var(--secondary-color); 
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .bill-visuals canvas { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; display: block; }
+        
+        .bill-svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; overflow: visible !important; }
         .bill-arrow-line { stroke: var(--secondary-color); stroke-width: 3; fill: none; filter: drop-shadow(0px 1px 2px rgba(255,255,255,0.8)); transition: all 0.3s; }
-        .bill-info-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(255, 255, 255, 0.95); padding: 10px 20px; border-radius: 50px; border: 3px solid var(--secondary-color); box-shadow: 0 4px 15px rgba(0,0,0,0.3); text-align: center; z-index: 10; pointer-events: none; min-width: 220px; transition: all 0.3s ease; }
+        
+        .bill-info-overlay { 
+            position: relative; 
+            margin-top: 10px;
+            margin-bottom: 5px;
+            background-color: white; 
+            padding: 10px 20px; 
+            border-radius: 50px; 
+            border: 2px solid var(--secondary-color); 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+            text-align: center; 
+            width: 100%;
+            transition: all 0.3s ease; 
+            z-index: 5;
+        }
         .bill-info-text { font-size: 1.15rem; font-weight: 900; color: var(--secondary-color); margin: 0; line-height: 1.4; }
 
         /* Legend */
@@ -67,10 +105,32 @@
         .ministry-filters { display: flex; gap: 15px; margin-bottom: 20px; }
         .ministry-select { flex: 1; padding: 10px 15px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; color: var(--primary-color); background: white; outline: none; transition: 0.2s; }
         .ministry-select:focus { border-color: var(--secondary-color); }
-        .ministry-stats-row { display: flex; justify-content: space-between; margin-bottom: 20px; background: rgba(8, 103, 136, 0.05); padding: 15px; border-radius: 8px; }
-        .m-stat { text-align: center; flex: 1; }
-        .m-stat-label { font-size: 0.85rem; color: #666; font-weight: bold; margin-bottom: 5px; }
-        .m-stat-val { font-size: 1.2rem; font-weight: 900; color: var(--primary-color); }
+        
+        /* [v109] Ministry Stats Row & Cells Optimization */
+        .ministry-stats-row { 
+            display: flex; 
+            /* justify-content: space-between;  <-- Removed to let flex:1 work */
+            margin-bottom: 20px; 
+            background: rgba(8, 103, 136, 0.05); 
+            padding: 15px 0; /* Removed horizontal padding to let items fill */
+            border-radius: 8px; 
+        }
+        
+        .m-stat { 
+            /* [v109] flex: 1 1 0px 強制三等分，不管內容多長 */
+            flex: 1 1 0px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center; 
+            padding: 0 5px;
+        }
+        
+        /* [v109] Font size reduced */
+        .m-stat-label { font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; }
+        .m-stat-val { font-size: 1.05rem; font-weight: 900; color: var(--primary-color); }
+        
         .m-trend-up { color: var(--danger-color); }
         .m-trend-down { color: var(--success-color); }
 
@@ -266,7 +326,9 @@
                             <div class="analysis-title">主管機關整體審查結果 (參考)</div>
                              <div class="mini-chart-box">
                                 <div style="height:150px;"><canvas id="chartModalAgencyReview"></canvas></div>
-                                <p style="font-size:0.8rem; color:#666; margin-top:5px;">全機關刪減與凍結總額佔比</p>
+                                <div id="caption-agency-review" style="font-size:0.85rem; color:#666; margin-top:10px; line-height:1.5;">
+                                    全機關刪減與凍結總額佔比
+                                </div>
                             </div>
                         </div>
 
@@ -364,6 +426,9 @@
             <div class="card">
                 <h3>115 年度預算分配概況</h3>
                 <div class="bill-container">
+                    <div class="bill-visuals">
+                        <canvas id="chartAllocation"></canvas>
+                    </div>
                     <svg id="pointer-layer" class="bill-svg-layer">
                         <defs>
                             <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
@@ -372,12 +437,12 @@
                         </defs>
                         <path id="dynamic-arrow" class="bill-arrow-line" marker-end="url(#arrowhead)"></path>
                     </svg>
-                    
-                    <div id="bill-info-overlay" class="bill-info-overlay">
-                        <p class="bill-info-text">請點擊下方圖例<br>查看數值</p>
-                    </div>
-                    <canvas id="chartAllocation"></canvas>
                 </div>
+                
+                <div id="bill-info-overlay" class="bill-info-overlay">
+                    <p class="bill-info-text">請點擊下方圖例<br>查看數值</p>
+                </div>
+
                 <div id="chartAllocationLegend" class="chart-legend"></div>
             </div>
 
@@ -1006,6 +1071,7 @@
                 legendContainer.innerHTML = legendHtml;
             }
 
+            // [v108] 修正箭頭邏輯：起點設為 Tooltip 上方中央，終點設為 Bar 中心
             window.updateBillOverlay = function(index, label, display, arrow) {
                 const infoOverlay = document.getElementById('bill-info-overlay');
                 const arrowLine = document.getElementById('dynamic-arrow');
@@ -1018,17 +1084,27 @@
                 const bar = meta.data[0]; 
                 
                 if (bar) {
-                    const targetX = (bar.x + bar.base) / 2;
-                    const targetY = bar.y - (bar.height / 2);
                     const containerRect = document.querySelector('.bill-container').getBoundingClientRect();
-                    const infoBoxRect = document.getElementById('bill-info-overlay').getBoundingClientRect();
-                    const boxLeftRel = infoBoxRect.left - containerRect.left;
-                    const boxTopRel = infoBoxRect.top - containerRect.top;
-                    const scaleX = chartAllocationInstance.width / containerRect.width;
-                    const scaleY = chartAllocationInstance.height / containerRect.height;
-                    const startX = (boxLeftRel + (infoBoxRect.width / 2)) * scaleX;
-                    const startY = (boxTopRel + infoBoxRect.height) * scaleY;
-                    const pathData = `M ${startX} ${startY} L ${targetX} ${targetY}`;
+                    const canvasRect = chartAllocationInstance.canvas.getBoundingClientRect();
+
+                    // 起點：Tooltip 的頂部中心 (相對於 Container)
+                    // 由於 Tooltip 在 Container 下方，且 margin-top: 10px
+                    // Container 高度為 containerRect.height
+                    // 我們讓箭頭起點設在 Container 的底部正中央，這樣看起來就像連到 Tooltip 頂部
+                    const startX_CSS = containerRect.width / 2;
+                    const startY_CSS = containerRect.height + 5; // 稍微往下延伸一點，接觸到 Tooltip 頂部
+
+                    // 終點：Bar 的中心
+                    const scaleX_ChartToCSS = canvasRect.width / chartAllocationInstance.width;
+                    const scaleY_ChartToCSS = canvasRect.height / chartAllocationInstance.height;
+
+                    const barCenterX_Internal = (bar.x + bar.base) / 2;
+                    const barCenterY_Internal = bar.y;
+
+                    const targetX_CSS = (canvasRect.left - containerRect.left) + (barCenterX_Internal * scaleX_ChartToCSS);
+                    const targetY_CSS = (canvasRect.top - containerRect.top) + (barCenterY_Internal * scaleY_ChartToCSS);
+                    
+                    const pathData = `M ${startX_CSS} ${startY_CSS} L ${targetX_CSS} ${targetY_CSS}`;
                     arrowLine.setAttribute('d', pathData);
                     arrowLine.style.opacity = '1';
                 }
@@ -1099,7 +1175,6 @@
                 if(chartModalPlanRatio) chartModalPlanRatio.destroy();
                 const ctxRatio = document.getElementById('chartModalPlanRatio').getContext('2d');
                 
-                // [修改 1] 計算總佔比並更新下方文字
                 const totalRatio = (agencyStats.totalBudget > 0) ? (projectBudget / agencyStats.totalBudget * 100).toFixed(2) : 0;
                 document.getElementById('caption-plan-ratio').innerText = `本計畫金額占${agencyName}預算 ${totalRatio}%`;
 
@@ -1121,7 +1196,6 @@
                 const projectCatData = catLabels.map(k => projectUsage[k]);
                 const restCatData = catLabels.map(k => (agencyStats.usageBreakdown[k] || 0) - (projectUsage[k] || 0));
 
-                // [修改 2] 預設提示文字
                 const captionEl = document.getElementById('caption-cat-ratio');
                 captionEl.innerText = "請滑鼠移至(或點擊)該類別的整行區域即可查看";
 
@@ -1138,7 +1212,6 @@
                         indexAxis: 'y', 
                         responsive: true, 
                         maintainAspectRatio: false, 
-                        // [新增] 擴大感應區設定
                         interaction: {
                             mode: 'index',
                             axis: 'y',
@@ -1146,7 +1219,6 @@
                         },
                         scales: { x: { stacked: true, ticks: { callback: function(value) { return formatCurrency(value); } } }, y: { stacked: true } }, 
                         plugins: { legend: { position: 'bottom' }, tooltip: tooltipCurrencyCallback },
-                        // [新增] onHover 事件，動態更新下方文字
                         onHover: function(e, activeEls) {
                             if (!activeEls || activeEls.length === 0) return;
                             const idx = activeEls[0].index;
@@ -1178,6 +1250,16 @@
                 const ctxAgencyRev = document.getElementById('chartModalAgencyReview').getContext('2d');
                 const totalPass = agencyStats.totalBudget - agencyStats.totalCut - agencyStats.totalFreeze;
                 
+                const pCut = parseMoney(reviewData['刪減金額']);
+                const pFreeze = parseMoney(reviewData['凍結金額']);
+                const aTotal = agencyStats.totalBudget;
+                const rCut = aTotal ? (pCut / aTotal * 100).toFixed(2) : 0;
+                const rFreeze = aTotal ? (pFreeze / aTotal * 100).toFixed(2) : 0;
+                
+                document.getElementById('caption-agency-review').innerHTML = 
+                    `${reviewData['計畫名稱']} 刪減金額占 ${agencyName} 預算 <b>${rCut}%</b><br>` +
+                    `${reviewData['計畫名稱']} 凍結金額占 ${agencyName} 預算 <b>${rFreeze}%</b>`;
+
                 chartModalAgencyReview = new Chart(ctxAgencyRev, {
                     type: 'bar',
                     data: {
@@ -1201,28 +1283,23 @@
             switchTab('plan'); document.getElementById('unifiedModal').style.display = 'flex';
         }
 
-        // [修復] 這裡加入了黨籍顏色判斷邏輯
         function openDetailC(jsonStr) {
             const data = JSON.parse(decodeURIComponent(jsonStr));
             
             document.getElementById('mc-name').innerText = data['委員姓名'] || '-';
             
-            // 1. 取得黨籍字串
             const party = data['黨籍'] || '無黨籍';
             const partyEl = document.getElementById('mc-party');
             partyEl.innerText = party;
 
-            // 2. 判斷對應的顏色 Class (與列表頁邏輯一致)
             let partyClass = 'tag-other';
             if(party.includes('民進')) partyClass='tag-dpp';
             else if(party.includes('國民')) partyClass='tag-kmt';
             else if(party.includes('民眾')) partyClass='tag-tpp';
             else if(party.includes('時代')) partyClass='tag-npp';
             
-            // 3. 設定 Class (基礎樣式 + 顏色樣式)
             partyEl.className = `leg-party-tag ${partyClass}`;
 
-            // 4. 處理頭像
             const avatarEl = document.getElementById('mc-avatar');
             avatarEl.innerHTML = ''; 
             const imgPath = `./photos/${data['委員姓名']}.jpg`;
