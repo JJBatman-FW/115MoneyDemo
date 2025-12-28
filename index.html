@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v109 排版精修版)</title>
+    <title>中央政府總預算觀測站 (v111 資料欄位擴充版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -46,7 +46,7 @@
         .card h3::before { content:''; position: absolute; left:-1.5rem; top: 5px; height: 1.2em; width: 6px; background: var(--secondary-color); border-radius: 0 4px 4px 0;}
         .chart-container { position: relative; height: 350px; width: 100%; }
 
-        /* Bill Container (v108+ Logic) */
+        /* Bill Container */
         .bill-container { 
             position: relative; 
             width: 100%; 
@@ -106,18 +106,15 @@
         .ministry-select { flex: 1; padding: 10px 15px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; color: var(--primary-color); background: white; outline: none; transition: 0.2s; }
         .ministry-select:focus { border-color: var(--secondary-color); }
         
-        /* [v109] Ministry Stats Row & Cells Optimization */
         .ministry-stats-row { 
             display: flex; 
-            /* justify-content: space-between;  <-- Removed to let flex:1 work */
             margin-bottom: 20px; 
             background: rgba(8, 103, 136, 0.05); 
-            padding: 15px 0; /* Removed horizontal padding to let items fill */
+            padding: 15px 0; 
             border-radius: 8px; 
         }
         
         .m-stat { 
-            /* [v109] flex: 1 1 0px 強制三等分，不管內容多長 */
             flex: 1 1 0px; 
             display: flex;
             flex-direction: column;
@@ -127,10 +124,8 @@
             padding: 0 5px;
         }
         
-        /* [v109] Font size reduced */
         .m-stat-label { font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; }
         .m-stat-val { font-size: 1.05rem; font-weight: 900; color: var(--primary-color); }
-        
         .m-trend-up { color: var(--danger-color); }
         .m-trend-down { color: var(--success-color); }
 
@@ -362,14 +357,14 @@
                 <h3 class="leg-detail-table-title title-cut">刪減案提案紀錄</h3>
                 <div style="overflow-x: auto;">
                     <table class="proposal-table">
-                        <thead><tr><th style="width:32%">刪減項目</th><th style="width:20%">刪減金額/比例</th><th>刪減理由</th></tr></thead>
+                        <thead><tr><th style="width:25%">刪減項目</th><th style="width:15%">刪減金額</th><th style="width:35%">刪減理由</th><th style="width:25%">審查結果</th></tr></thead>
                         <tbody id="table-cut-c"></tbody>
                     </table>
                 </div>
                 <h3 class="leg-detail-table-title title-freeze">凍結案提案紀錄</h3>
                 <div style="overflow-x: auto;">
                     <table class="proposal-table">
-                        <thead><tr><th style="width:32%">凍結項目</th><th style="width:20%">凍結金額/比例</th><th>凍結理由</th></tr></thead>
+                        <thead><tr><th style="width:25%">凍結項目</th><th style="width:15%">凍結金額</th><th style="width:35%">凍結理由</th><th style="width:25%">審查結果</th></tr></thead>
                         <tbody id="table-freeze-c"></tbody>
                     </table>
                 </div>
@@ -1071,7 +1066,6 @@
                 legendContainer.innerHTML = legendHtml;
             }
 
-            // [v108] 修正箭頭邏輯：起點設為 Tooltip 上方中央，終點設為 Bar 中心
             window.updateBillOverlay = function(index, label, display, arrow) {
                 const infoOverlay = document.getElementById('bill-info-overlay');
                 const arrowLine = document.getElementById('dynamic-arrow');
@@ -1087,14 +1081,9 @@
                     const containerRect = document.querySelector('.bill-container').getBoundingClientRect();
                     const canvasRect = chartAllocationInstance.canvas.getBoundingClientRect();
 
-                    // 起點：Tooltip 的頂部中心 (相對於 Container)
-                    // 由於 Tooltip 在 Container 下方，且 margin-top: 10px
-                    // Container 高度為 containerRect.height
-                    // 我們讓箭頭起點設在 Container 的底部正中央，這樣看起來就像連到 Tooltip 頂部
                     const startX_CSS = containerRect.width / 2;
-                    const startY_CSS = containerRect.height + 5; // 稍微往下延伸一點，接觸到 Tooltip 頂部
+                    const startY_CSS = containerRect.height - 5; 
 
-                    // 終點：Bar 的中心
                     const scaleX_ChartToCSS = canvasRect.width / chartAllocationInstance.width;
                     const scaleY_ChartToCSS = canvasRect.height / chartAllocationInstance.height;
 
@@ -1283,6 +1272,7 @@
             switchTab('plan'); document.getElementById('unifiedModal').style.display = 'flex';
         }
 
+        // [Updated] Priority for Manual Result
         function openDetailC(jsonStr) {
             const data = JSON.parse(decodeURIComponent(jsonStr));
             
@@ -1329,18 +1319,46 @@
             cutsTbody.innerHTML = ''; freezesTbody.innerHTML = '';
             
             if(!details) {
-                 cutsTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">無資料</td></tr>';
-                 freezesTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">無資料</td></tr>';
+                 cutsTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">無資料</td></tr>';
+                 freezesTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">無資料</td></tr>';
             } else {
                  details.split('|').forEach(item => {
                     const parts = item.split('#');
                     if(parts.length >= 4) {
                         const btnHtml = parts[4] ? `<br><button class="jump-btn" onclick="jumpToProjectB('${parts[4]}')">查看計畫</button>` : '';
                         
+                        // [V111] Updated Logic: Check for Manual Result first
+                        const projectId = parts[4] ? parts[4].trim() : '';
+                        const manualResult = parts[5] ? parts[5].trim() : ''; // Get the new 6th field
+
+                        let resultText = '<span style="color:#999">-</span>';
+
+                        if (manualResult) {
+                            // Priority 1: Use manual string from CSV
+                            resultText = `<span style="font-weight:bold; color:var(--primary-color);">${manualResult}</span>`;
+                        } else if (projectId) {
+                            // Priority 2: Fallback to old lookup logic
+                            const projectB = allDataPageB.find(p => p['計畫編號'] === projectId);
+                            if (projectB) {
+                                const cutAmt = parseMoney(projectB['刪減金額']);
+                                const freezeAmt = parseMoney(projectB['凍結金額']);
+                                let resParts = [];
+                                if(cutAmt > 0) resParts.push(`刪減 ${formatCurrency(cutAmt)}`);
+                                if(freezeAmt > 0) resParts.push(`凍結 ${formatCurrency(freezeAmt)}`);
+                                
+                                if(resParts.length > 0) {
+                                    resultText = resParts.join('<br>');
+                                } else {
+                                    resultText = "<span style='color:var(--secondary-color); font-weight:bold;'>照案通過</span>";
+                                }
+                            }
+                        }
+
                         const rowHtml = `<tr>
                             <td>${parts[1]}${btnHtml}</td>
                             <td>${parts[2]}</td>
                             <td>${parts[3]}</td>
+                            <td>${resultText}</td>
                         </tr>`;
                         
                         if(parts[0].includes('刪減')) cutsTbody.innerHTML += rowHtml;
@@ -1349,8 +1367,8 @@
                 });
             }
             
-            if(cutsTbody.innerHTML === '') cutsTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#999">無刪減提案</td></tr>';
-            if(freezesTbody.innerHTML === '') freezesTbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#999">無凍結提案</td></tr>';
+            if(cutsTbody.innerHTML === '') cutsTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999">無刪減提案</td></tr>';
+            if(freezesTbody.innerHTML === '') freezesTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#999">無凍結提案</td></tr>';
 
             document.getElementById('detailModalC').style.display = 'flex';
         }
