@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v111 資料欄位擴充版)</title>
+    <title>中央政府總預算觀測站 (v112 預算歸零隱藏版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -765,12 +765,21 @@
 
         function displayUnifiedBlocks(data){
             const container=document.getElementById('results-container-budget');
-            if(!data||data.length===0){
+            
+            // [V112 Modification] Filter out items with 0 budget
+            // We filter the input data array directly before rendering
+            const validData = data.filter(row => {
+                const amt = parseMoney(row['預算金額']);
+                return amt !== 0;
+            });
+
+            if(!validData || validData.length===0){
                 container.innerHTML='<p align="center" style="color:#999; padding:30px; font-size:1.1rem;">查無資料</p>';
                 return;
             }
+            
             let html='';
-            data.forEach(row=>{
+            validData.forEach(row=>{
                 const id = row['計畫編號'];
                 const amountRaw=parseMoney(row['預算金額']);
                 html+=`<div class="project-block" onclick="openUnifiedDetail('${id}')">
@@ -1066,6 +1075,7 @@
                 legendContainer.innerHTML = legendHtml;
             }
 
+            // [v108] 修正箭頭邏輯：起點設為 Tooltip 上方中央，終點設為 Bar 中心
             window.updateBillOverlay = function(index, label, display, arrow) {
                 const infoOverlay = document.getElementById('bill-info-overlay');
                 const arrowLine = document.getElementById('dynamic-arrow');
