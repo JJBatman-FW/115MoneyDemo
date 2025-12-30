@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v112 預算歸零隱藏版)</title>
+    <title>中央政府總預算觀測站 (v124 函數完全修復版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -36,8 +36,10 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         /* Footer */
-        footer { background-color: var(--bg-color); color: #555; padding: 3rem 1rem; text-align: center; margin-top: auto; font-size: 0.9rem; border-top: 4px solid var(--secondary-color); }
-        
+        footer { background-color: var(--card-bg); color: #666; padding: 3rem 1rem; text-align: center; margin-top: auto; font-size: 0.9rem; border-top: 4px solid var(--secondary-color); }
+        footer p { margin: 8px 0; }
+        footer strong { color: var(--secondary-color); }
+
         /* Components */
         .section-title { text-align: center; margin: 3rem 0 1.5rem 0; color: var(--primary-color); position: relative; font-weight: 800; }
         .section-title::after { content: ''; display: block; width: 60px; height: 5px; background: var(--accent-color); margin: 15px auto 0; border-radius: 3px; }
@@ -45,6 +47,90 @@
         .card h3 { color: var(--primary-color); margin-top: 0; font-weight: 700; border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; position: relative; }
         .card h3::before { content:''; position: absolute; left:-1.5rem; top: 5px; height: 1.2em; width: 6px; background: var(--secondary-color); border-radius: 0 4px 4px 0;}
         .chart-container { position: relative; height: 350px; width: 100%; }
+
+        /* Timeline Styles */
+        .timeline-wrapper {
+            position: relative;
+            padding: 10px 10px 10px 20px;
+        }
+        .timeline {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            position: relative;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 7px;
+            width: 3px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding-left: 35px;
+        }
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        .timeline-marker {
+            position: absolute;
+            left: 0;
+            top: 6px;
+            width: 17px;
+            height: 17px;
+            border-radius: 50%;
+            background: var(--secondary-color);
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 2px var(--secondary-color);
+            z-index: 1;
+        }
+        .timeline-date {
+            font-size: 0.9rem;
+            color: #888;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .timeline-events {
+            display: flex;
+            flex-direction: column;
+            gap: 8px; 
+        }
+        .timeline-event-row {
+            background: #f9f9f9;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border-left: 4px solid var(--secondary-color);
+        }
+        .timeline-event-title {
+            font-size: 1.05rem;
+            color: #333;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .timeline-link-btn {
+            display: inline-block;
+            padding: 2px 10px;
+            font-size: 0.75rem;
+            color: white;
+            background-color: var(--secondary-color);
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-weight: normal;
+        }
+        .timeline-link-btn:hover {
+            background-color: #0a7ea6;
+            transform: translateY(-1px);
+        }
 
         /* Bill Container */
         .bill-container { 
@@ -56,7 +142,6 @@
             box-sizing: border-box; 
             margin-bottom: 5px; 
         }
-        
         .bill-visuals {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -70,12 +155,9 @@
             overflow: hidden;
             z-index: 1;
         }
-
         .bill-visuals canvas { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; display: block; }
-        
         .bill-svg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; overflow: visible !important; }
         .bill-arrow-line { stroke: var(--secondary-color); stroke-width: 3; fill: none; filter: drop-shadow(0px 1px 2px rgba(255,255,255,0.8)); transition: all 0.3s; }
-        
         .bill-info-overlay { 
             position: relative; 
             margin-top: 10px;
@@ -105,7 +187,6 @@
         .ministry-filters { display: flex; gap: 15px; margin-bottom: 20px; }
         .ministry-select { flex: 1; padding: 10px 15px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 1rem; color: var(--primary-color); background: white; outline: none; transition: 0.2s; }
         .ministry-select:focus { border-color: var(--secondary-color); }
-        
         .ministry-stats-row { 
             display: flex; 
             margin-bottom: 20px; 
@@ -113,7 +194,6 @@
             padding: 15px 0; 
             border-radius: 8px; 
         }
-        
         .m-stat { 
             flex: 1 1 0px; 
             display: flex;
@@ -123,7 +203,6 @@
             text-align: center; 
             padding: 0 5px;
         }
-        
         .m-stat-label { font-size: 0.8rem; color: #666; font-weight: bold; margin-bottom: 5px; }
         .m-stat-val { font-size: 1.05rem; font-weight: 900; color: var(--primary-color); }
         .m-trend-up { color: var(--danger-color); }
@@ -389,6 +468,12 @@
             
             <div id="demo-badge-home" class="demo-mode-badge" style="text-align:center;">⚠️ 目前顯示為測試資料 (無法連線至資料庫)</div>
 
+            <div class="card">
+                <h3>預算審查進度</h3>
+                <div class="timeline-wrapper" id="budget-timeline">
+                    </div>
+            </div>
+
             <div class="card" style="padding-bottom: 2.5rem;">
                 <h3>總預算審查比例概況</h3>
                 <div style="height: 100px; margin-bottom: 2rem;"><canvas id="chartStatusB"></canvas></div>
@@ -512,6 +597,14 @@
         </section>
     </main>
 
+    <footer>
+        <div class="footer-content">
+            <p><strong>資料來源：</strong>各機關網頁、立法院議事及公報網</p>
+            <p><strong>免責聲明：</strong>網站目前為測試版，本網站計算內容為試算，正式資料依主計總處公布為主</p>
+            <p style="margin-top: 10px; font-size: 0.8rem; color: #999;">&copy; 2025 中央政府總預算觀測站</p>
+        </div>
+    </footer>
+
     <script>
         // --- 1. Constants & Variables ---
         const FILE_ID = '1Qft9FVm9XtT3SVzbgX1NSduPP0sBR3CdGqiUsm-Mmrs'; 
@@ -520,17 +613,23 @@
         const dataSources = {
             'page-a': getQueryUrl('612819456'), 
             'page-b': getQueryUrl('1304436957'), 
-            'page-c': getQueryUrl('1025885437') 
+            'page-c': getQueryUrl('1025885437'),
+            'page-d': getQueryUrl('1462843513') 
         };
 
         const MOCK_DATA_A=[{'計畫編號':'TEST001','所屬部會':'行政院','主管機關':'國防部','計畫名稱':'國防自主強化計畫 (測試資料)','預算金額':'5000000000','114年預算金額':'4800000000','政事別':'國防','工作內容':'測試說明。','分支計畫':'潛艦國造:3000000000|無人機研發:2000000000','用途比例':'人事費:50000000|業務費:30000000|設備及投資:4000000000|獎補助費:10000000|債務費:0|預備金:0'}];
         const MOCK_DATA_B=[{'計畫編號':'TEST001','計畫名稱':'國防自主強化計畫','主管機關':'國防部','預算金額':'5000000000','刪減金額':'1000000','凍結金額':'50000000','委員會刪減':'500000','委員會凍結':'20000000','院會表決刪減':'500000','院會表決凍結':'30000000','通案刪減':'100000','通案凍結':'0','提案紀錄':'王小明:凍結:理由A','資料類型':'計畫'}];
         const MOCK_DATA_C=[{'委員姓名':'王小明','黨籍':'無黨籍','刪減案數':'5','凍結案數':'10','主決議數':'2','照片':'','提案明細':'刪減#國防自主強化計畫 (測試資料)#100萬#理由B#TEST001'}];
+        const MOCK_DATA_D=[
+            {'日期':'113/08/22', '事項':'行政院通過總預算案', '連結':''},
+            {'日期':'113/08/30', '事項':'預算案送立法院審議', '連結':''},
+            {'日期':'113/11/08', '事項':'付委審查', '連結':''}
+        ];
         
-        let allDataPageA = [], allDataPageB = [], allDataPageB_Plans = [], allDataPageC = []; 
+        let allDataPageA = [], allDataPageB = [], allDataPageB_Plans = [], allDataPageC = [], allDataPageD = []; 
         let mainChartsRendered = false;
         let isDemoMode = false;
-        
+
         // Chart Instances
         let chartStatusInstance = null;
         let chartAllocationInstance = null;
@@ -605,6 +704,23 @@
             if (pageId === 'page-legislator' && allDataPageC.length === 0 && !isDemoMode) fetchData('page-c');
         }
 
+        // [v124] 補回遺失的 switchTab 函數
+        function switchTab(tabName) {
+            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            if (tabName === 'plan') {
+                document.querySelector('.modal-tab:first-child').classList.add('active');
+                document.getElementById('tab-content-plan').classList.add('active');
+            } else {
+                document.querySelector('.modal-tab:last-child').classList.add('active');
+                document.getElementById('tab-content-review').classList.add('active');
+            }
+            setTimeout(() => {
+                const modalBody = document.querySelector('#unifiedModal .modal-body-area');
+                if (modalBody) modalBody.scrollTop = 0;
+            }, 0);
+        }
+
         function toggleDesc() {
             const container = document.getElementById('u-desc-container');
             const btn = document.getElementById('toggle-desc-btn');
@@ -665,6 +781,7 @@
                 if (pageId === 'page-a') { allDataPageA = cleanData; } 
                 else if (pageId === 'page-b') { allDataPageB = cleanData; processPageBData(allDataPageB); } 
                 else if (pageId === 'page-c') { allDataPageC = cleanData; filterLegislators('all'); }
+                else if (pageId === 'page-d') { allDataPageD = cleanData; renderTimeline(allDataPageD); }
 
                 if (!silent) loader.style.display = 'none';
                 return cleanData;
@@ -677,6 +794,7 @@
                 if (pageId === 'page-a') { mockData = MOCK_DATA_A; allDataPageA = mockData; }
                 else if (pageId === 'page-b') { mockData = MOCK_DATA_B; allDataPageB = mockData; processPageBData(mockData); }
                 else if (pageId === 'page-c') { mockData = MOCK_DATA_C; allDataPageC = mockData; filterLegislators('all'); }
+                else if (pageId === 'page-d') { mockData = MOCK_DATA_D; allDataPageD = mockData; renderTimeline(mockData); }
                 
                 if (!silent) {
                     loader.style.display = 'none';
@@ -767,7 +885,6 @@
             const container=document.getElementById('results-container-budget');
             
             // [V112 Modification] Filter out items with 0 budget
-            // We filter the input data array directly before rendering
             const validData = data.filter(row => {
                 const amt = parseMoney(row['預算金額']);
                 return amt !== 0;
@@ -1023,7 +1140,7 @@
             
             const ctx1=document.getElementById('chartBResult').getContext('2d');
             if(chartB1) chartB1.destroy();
-            chartB1=new Chart(ctx1,{type:'bar',data:{labels:['結果'],datasets:[{label:'通過',data:[pass],backgroundColor:'#086788'},{label:'凍結',data:[freeze],backgroundColor:'#F0C808'},{label:'刪減',data:[cut],backgroundColor:'#E74C3C'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true}},plugins:{tooltip:tooltipCurrencyCallback}}});
+            chartB1=new Chart(ctx1,{type:'bar',data:{labels:['結果'],datasets:[{label:'通過',data:[pass],backgroundColor:'#086788'},{label:'凍結',data:[freeze],backgroundColor:'#F0C808'},{label:'刪減',data:[cut],backgroundColor:'#E74C3C'}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,scales:{x:{stacked:true,display:false},y:{stacked:true,display:false}},plugins:{tooltip:tooltipCurrencyCallback}}});
             
             const cCut = parseMoney(row['委員會刪減']);
             const cFreeze = parseMoney(row['委員會凍結']);
@@ -1111,43 +1228,52 @@
             mainChartsRendered=true;
         }
 
-        async function jumpToProjectB(projectId) {
-            const loader = document.getElementById('loader'); loader.style.display = 'flex';
-            closeModal(null, 'detailModalC'); showPage('page-budget');
-            if(allDataPageA.length === 0) await fetchData('page-a', true);
-            if(allDataPageB.length === 0) await fetchData('page-b', true);
-            const targetId = String(projectId).trim(); openUnifiedDetail(targetId); switchTab('review');
-            loader.style.display = 'none';
-        }
-
-        async function jumpToC(name) {
-            const loader = document.getElementById('loader'); loader.style.display = 'flex';
-            closeModal(null, 'unifiedModal'); 
-            if(allDataPageC.length === 0) { try { await fetchData('page-c'); } catch(e) { loader.style.display = 'none'; return; } }
-            const targetName = String(name).trim();
-            const target = allDataPageC.find(r => String(r['委員姓名']).trim() === targetName);
-            loader.style.display = 'none';
-            if(target) { const str = encodeURIComponent(JSON.stringify(target)); openDetailC(str); } 
-            else { alert(`查無此委員資料 (${targetName})`); }
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            if (tabName === 'plan') {
-                document.querySelector('.modal-tab:first-child').classList.add('active');
-                document.getElementById('tab-content-plan').classList.add('active');
-            } else {
-                document.querySelector('.modal-tab:last-child').classList.add('active');
-                document.getElementById('tab-content-review').classList.add('active');
+        // [v117] Date Format Helper
+        function formatGoogleDate(raw) {
+            if (typeof raw === 'string' && raw.startsWith('Date(')) {
+                const parts = raw.match(/Date\((\d+),(\d+),(\d+)\)/);
+                if (parts && parts.length === 4) {
+                    let y = parseInt(parts[1]); let m = parseInt(parts[2]) + 1; let d = parseInt(parts[3]);
+                    if (y > 1911) y -= 1911;
+                    return `${y}/${m < 10 ? '0' + m : m}/${d < 10 ? '0' + d : d}`;
+                }
             }
-            setTimeout(() => {
-                const modalBody = document.querySelector('#unifiedModal .modal-body-area');
-                if (modalBody) modalBody.scrollTop = 0;
-            }, 0);
+            return raw;
         }
 
-        // --- 9. Modal Logic & Data Binding ---
+        // [v116] Render Timeline (Grouped)
+        function renderTimeline(data) {
+            const container = document.getElementById('budget-timeline');
+            if (!container) return;
+
+            const sourceData = (data && data.length > 0) ? data : MOCK_DATA_D;
+            const grouped = {};
+            sourceData.forEach(item => {
+                const dateKey = formatGoogleDate(item['日期']); 
+                if (!grouped[dateKey]) { grouped[dateKey] = []; }
+                grouped[dateKey].push(item);
+            });
+
+            let html = '<ul class="timeline">';
+            Object.keys(grouped).forEach(date => {
+                const events = grouped[date];
+                let eventsHtml = '';
+                events.forEach(ev => {
+                    let linkBtn = '';
+                    if (ev['連結']) { linkBtn = `<a href="${ev['連結']}" target="_blank" class="timeline-link-btn">📄 相關公報</a>`; }
+                    eventsHtml += `<div class="timeline-event-row"><div class="timeline-event-title">${ev['事項']} ${linkBtn}</div></div>`;
+                });
+                html += `<li class="timeline-item"><div class="timeline-marker"></div><div class="timeline-content"><span class="timeline-date">${date}</span><div class="timeline-events">${eventsHtml}</div></div></li>`;
+            });
+            html += '</ul>';
+            container.innerHTML = html;
+        }
+
+
+        // ==========================================
+        // [v120] 補回遺失的 Modal 開啟函數 (核心修復)
+        // ==========================================
+
         function openUnifiedDetail(id) {
             const planData = allDataPageA.find(r => r['計畫編號'] === id);
             const reviewData = allDataPageB.find(r => r['計畫編號'] === id);
@@ -1163,7 +1289,6 @@
                 document.getElementById('u-desc-container').classList.remove('expanded');
                 document.getElementById('toggle-desc-btn').innerText = '展開閱讀全文';
 
-                // renderDetailChartsA 內部已經會自己銷毀 chartBarA 和 chartPieA 了，這裡不用再呼叫 destroy
                 renderDetailChartsA(planData);
                 
                 const agencyName = planData['主管機關'];
@@ -1221,11 +1346,10 @@
                         onHover: function(e, activeEls) {
                             if (!activeEls || activeEls.length === 0) return;
                             const idx = activeEls[0].index;
-                            const label = this.data.labels[idx]; // 類別名稱 (如: 人事費)
+                            const label = this.data.labels[idx]; 
                             const pVal = projectCatData[idx];
                             const totalVal = agencyStats.usageBreakdown[label];
                             const pct = (totalVal > 0) ? (pVal / totalVal * 100).toFixed(2) : 0;
-                            
                             captionEl.innerHTML = `本計畫<b>${label}</b>占<b>${agencyName}${label}</b>預算 <b>${pct}%</b>`;
                         }
                     }
@@ -1238,7 +1362,6 @@
             if (reviewData) {
                 reviewContainer.style.display = 'block'; reviewNoData.style.display = 'none';
                 
-                // renderDetailChartsB 內部已經會自己銷毀 chartB1 和 chartB2 了
                 renderDetailChartsB(reviewData); 
                 renderProposalTable(reviewData);
 
@@ -1282,7 +1405,6 @@
             switchTab('plan'); document.getElementById('unifiedModal').style.display = 'flex';
         }
 
-        // [Updated] Priority for Manual Result
         function openDetailC(jsonStr) {
             const data = JSON.parse(decodeURIComponent(jsonStr));
             
@@ -1337,17 +1459,14 @@
                     if(parts.length >= 4) {
                         const btnHtml = parts[4] ? `<br><button class="jump-btn" onclick="jumpToProjectB('${parts[4]}')">查看計畫</button>` : '';
                         
-                        // [V111] Updated Logic: Check for Manual Result first
                         const projectId = parts[4] ? parts[4].trim() : '';
-                        const manualResult = parts[5] ? parts[5].trim() : ''; // Get the new 6th field
+                        const manualResult = parts[5] ? parts[5].trim() : ''; 
 
                         let resultText = '<span style="color:#999">-</span>';
 
                         if (manualResult) {
-                            // Priority 1: Use manual string from CSV
                             resultText = `<span style="font-weight:bold; color:var(--primary-color);">${manualResult}</span>`;
                         } else if (projectId) {
-                            // Priority 2: Fallback to old lookup logic
                             const projectB = allDataPageB.find(p => p['計畫編號'] === projectId);
                             if (projectB) {
                                 const cutAmt = parseMoney(projectB['刪減金額']);
@@ -1389,7 +1508,8 @@
             Promise.all([
                 fetchData('page-a', true),
                 fetchData('page-b', true),
-                fetchData('page-c', true)
+                fetchData('page-c', true),
+                fetchData('page-d', true)
             ]).then(() => {
                 if(!isDemoMode && allDataPageA.length > 5) {
                     initMinistrySection();
