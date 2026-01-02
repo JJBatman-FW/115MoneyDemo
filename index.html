@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v124 函數完全修復版)</title>
+    <title>中央政府總預算觀測站 (v125 新聞按鈕追加版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -457,6 +457,7 @@
             <button id="nav-home" onclick="showPage('home')">首頁</button>
             <button id="nav-budget" onclick="showPage('page-budget')">預算審查</button>
             <button id="nav-legislator" onclick="showPage('page-legislator')">立委把關</button>
+            <button onclick="window.open('https://www.cna.com.tw/topic/newstopic/3958.aspx', '_blank')">相關新聞</button>
         </nav>
     </header>
 
@@ -614,6 +615,7 @@
             'page-a': getQueryUrl('612819456'), 
             'page-b': getQueryUrl('1304436957'), 
             'page-c': getQueryUrl('1025885437'),
+            // [v121] Updated Timeline GID
             'page-d': getQueryUrl('1462843513') 
         };
 
