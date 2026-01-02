@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v141 版面重組優化版)</title>
+    <title>中央政府總預算觀測站 (v143 終極修正版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -41,6 +41,7 @@
             display: flex; 
             flex-direction: column; 
             min-height: 100vh; 
+            overflow-x: hidden;
         }
         
         /* Header */
@@ -140,31 +141,27 @@
         footer p { margin: 8px 0; }
         footer strong { color: var(--secondary-color); }
 
-        /* [v141 Layout System] */
-        
-        /* 通用區塊設定 */
+        /* Content Block Layout System */
         .content-block {
-            margin-bottom: 8rem; /* 板塊間距加大 */
+            margin-bottom: 8rem;
             padding-top: 1rem;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
         }
 
-        /* 第1區塊 (Hero) 特別設定：置中 */
         .hero-section {
-            min-height: 85vh; /* 佔滿畫面 */
+            min-height: 85vh;
             margin-bottom: 4rem;
-            justify-content: center; /* 垂直置中 */
-            align-items: center;     /* 水平置中 */
+            justify-content: center;
+            align-items: center;
             text-align: center;
         }
 
-        /* 板塊內物件間距縮小 */
         .content-block .article-text,
         .content-block .card,
         .content-block .ranking-container {
-            margin-bottom: 1.5rem; /* 原本是 2.5rem，改小讓關聯性更強 */
+            margin-bottom: 1.5rem;
         }
         
         .content-block:last-child {
@@ -174,7 +171,7 @@
         /* Typography & Article Styles */
         .article-title {
             text-align: center;
-            font-size: 2.5rem; /* 大標題再大一點 */
+            font-size: 2.5rem;
             font-weight: 900;
             color: var(--primary-color);
             margin-bottom: 2.5rem;
@@ -191,7 +188,7 @@
             font-size: 1.15rem;
             line-height: 1.8;
             box-shadow: 0 4px 15px rgba(8, 103, 136, 0.1);
-            text-align: left; /* 前言內文靠左對齊比較好閱讀 */
+            text-align: left;
             max-width: 800px;
         }
         .article-text {
@@ -207,7 +204,6 @@
             margin-bottom: 1.5rem;
         }
         
-        /* Scroll Hint */
         .scroll-hint {
             text-align: center;
             margin-top: 2rem;
@@ -254,7 +250,7 @@
             padding: 1.5rem; 
             border-radius: 12px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            margin-bottom: 1.5rem; /* [v141] Adjusted margin */
+            margin-bottom: 1.5rem; 
             overflow: hidden; 
             border: 1px solid var(--border-color); 
         }
@@ -415,6 +411,41 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .error-message { text-align:center; padding: 20px; color: #E74C3C; background: #ffeaea; border-radius: 10px; border: 1px solid #E74C3C; max-width: 80%; }
         .demo-mode-badge { background: var(--warning-color); color: var(--primary-color); padding: 8px 16px; border-radius: 50px; font-weight: bold; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: none; }
+        
+        /* [v142] RWD Optimization */
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 15px; padding: 1rem; } 
+            header nav { width: 100%; justify-content: center; flex-wrap: wrap; } 
+            header nav button { flex: 1; min-width: 80px; text-align: center; } 
+            main { padding: 1rem; }
+            .btn-group { flex-direction: column; gap: 15px; }
+            .big-btn { width: 100%; }
+            .chart-container { height: 250px; }
+            
+            /* Ranking: Force 1 column on mobile */
+            .ranking-container { grid-template-columns: 1fr !important; gap: 20px; }
+            
+            .modal-charts-grid { grid-template-columns: 1fr; }
+            .search-input-lg { font-size: 16px; padding: 12px 20px; }
+            .project-block { grid-template-columns: 1fr; gap: 10px; border-left-width: 6px; }
+            .pb-amount { text-align: left; margin-left: 0; font-size: 1.3rem; }
+            .legislator-grid { grid-template-columns: 1fr; }
+            .leg-modal-body { padding: 20px; }
+            .bill-container { padding: 5% 10%; border-width: 1px; }
+            .modal-header-area { padding: 20px; }
+            .modal-body-area { padding: 20px; }
+            
+            /* Ministry Dashboard: Vertical Stack */
+            .ministry-dashboard { grid-template-columns: 1fr !important; gap: 20px; }
+            .ministry-filters { flex-direction: column; }
+            
+            /* Typography on Mobile */
+            .article-title { font-size: 1.8rem; }
+            .article-text { font-size: 1rem; }
+            
+            /* Fix Content Blocks */
+            .content-block { margin-top: 2rem; margin-bottom: 4rem; min-height: auto; }
+        }
     </style>
 </head>
 <body>
@@ -803,7 +834,6 @@
         };
 
         // --- 3. [CRITICAL] DEFINE CHART & RENDER FUNCTIONS FIRST ---
-        // Placing these at the top ensures they are loaded before any event triggers them.
         
         function renderDetailChartsA(row){
             let subLabels=[],subData=[];
@@ -1248,6 +1278,7 @@
         function displayUnifiedBlocks(data){
             const container=document.getElementById('results-container-budget');
             
+            // [V112 Modification] Filter out items with 0 budget
             const validData = data.filter(row => {
                 const amt = parseMoney(row['預算金額']);
                 return amt !== 0;
@@ -1304,6 +1335,7 @@
 
                 renderDetailChartsA(planData);
                 
+                // [v140 FIX] calculateAgencyStats now guaranteed to exist
                 const agencyName = planData['主管機關'];
                 const agencyStats = calculateAgencyStats(agencyName);
                 const projectBudget = parseMoney(planData['預算金額']);
@@ -1557,7 +1589,8 @@
             container.innerHTML = html;
         }
 
-        // --- 9. Data Loading & Initialization ---
+        // --- 10. Event Listeners ---
+        // --- 11. Data Loading ---
         function parseQueryResponse(jsonData) {
             const table = jsonData.table;
             const cols = table.cols.map(c => c.label).filter(l => l !== '');
@@ -1634,7 +1667,6 @@
             }
         }
 
-        // --- 10. Event Listeners ---
         window.addEventListener('DOMContentLoaded', () => {
             renderMainCharts();
             Promise.all([
