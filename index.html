@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v143 終極修正版)</title>
+    <title>中央政府總預算觀測站 (v144 時間軸升級版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -287,6 +287,41 @@
         .timeline-event-title { font-size: 1.05rem; color: #333; font-weight: 700; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
         .timeline-link-btn { display: inline-block; padding: 2px 10px; font-size: 0.75rem; color: white; background-color: var(--secondary-color); border-radius: 12px; text-decoration: none; transition: all 0.2s; font-weight: normal; }
         .timeline-link-btn:hover { background-color: #0a7ea6; transform: translateY(-1px); }
+
+        /* [v144] Special Deadline Line Styles */
+        .timeline-deadline-item {
+            list-style: none;
+            margin-bottom: 30px;
+            position: relative;
+            padding-left: 0 !important; /* Remove indentation */
+        }
+        /* Hide the marker/line for deadline items */
+        .timeline-deadline-item .timeline-marker { display: none; }
+        
+        .timeline-deadline-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--danger-color);
+            position: relative;
+        }
+        
+        .timeline-deadline-row::before,
+        .timeline-deadline-row::after {
+            content: '';
+            flex: 1;
+            border-bottom: 2px dashed var(--danger-color);
+            opacity: 0.6;
+        }
+        
+        .timeline-deadline-text {
+            padding: 0 15px;
+            font-weight: 900;
+            font-size: 1rem;
+            color: var(--danger-color);
+            background-color: var(--card-bg); /* Match background */
+            z-index: 2;
+        }
 
         /* Bill Visuals */
         .bill-container { position: relative; width: 100%; aspect-ratio: 16 / 7; padding: 0; overflow: visible !important; box-sizing: border-box; margin-bottom: 5px; }
@@ -609,7 +644,7 @@
 
             <div class="content-block">
                 <div class="article-text">
-                    <p>中央政府總預算包含成千上百工作計畫，根據立法院公報內容，我們嘗試計算各項工作計畫的刪凍金額，並分成工作計畫與立委2個部分，可讓讀者查詢關心的議題預算金額與工作內容，或是了解各立委提案情形。</p>
+                    <p>中央政府總預算包含成千上百工作計畫，我們立法院公報內容，嘗試計算各項工作計畫的刪凍金額，並分成工作計畫與立委2個部分，可讓讀者查詢關心的議題預算金額與工作內容，或是了解各立委提案情形。</p>
                     <p>目前呈現在網頁上的金額數字皆是透過立法院公報內容進行計算，可能出現誤差，最終法定預算金額仍依以主計總處公布為主。</p>
                 </div>
                 <div class="card" style="padding-bottom: 2.5rem;">
@@ -642,15 +677,16 @@
                     <p>歲出編列則為3兆350億元，較114年度預算增加1100億，是近10年總預算案歲出編列第2高的金額。</p>
                     <p>歲出為各項工作計畫的支出，但不包含償還債務；歲入則是為支應個工作計畫所籌措的財源，不包含舉債和前一年度歲計剩餘。</p>
                 </div>
+
                 <div class="card">
                     <h3>歷年預算案歲出比較</h3>
                     <div class="chart-container"><canvas id="chartYearly"></canvas></div>
                 </div>
+                
                 <div class="article-text">
                     <p>歲出編列時會依據其業務性質做科目分類，也就是「政事別」。根據「歲出政事別科目歸類原則與範圍」規定，政事別科目區分為大分類、中分類、業務計畫3個層次，其中大分類包括一般政務、國防、經濟發展、教育科學文化等9大項目。</p>
-                    <p>今年占比最多為社會福利8318億元，其次是教育科學文化5566億元、國防5488億元、經濟發展4275億元。當中國防支出增加最多、教育科學文化支出減少最多。</p>
+                    <p>當中占比最多8318億元用於社會福利、5566億元用於教育科學文化、5488億元用於國防、4275億元用於經濟發展。其中國防支出增加最多、教育科學文化支出最少。</p>
                 </div>
-                
                 <div class="card">
                     <h3>115 年度預算案分配概況</h3>
                     <div class="bill-container">
@@ -1043,7 +1079,7 @@
             return breakdown;
         }
 
-        // [v140] Restored
+        // [v142] Restored
         function calculateAgencyStats(agencyName) {
             const agencyProjects = allDataPageA.filter(p => p['主管機關'] === agencyName);
             const agencyTotalBudget = agencyProjects.reduce((sum, p) => sum + parseMoney(p['預算金額']), 0);
@@ -1071,7 +1107,7 @@
             };
         }
 
-        // [v140] Restored
+        // [v142] Restored
         function processPageBData(data){
             let totalCut=0,totalFreeze=0,totalBudget=0;let deptStats={};allDataPageB_Plans=[];
             data.forEach(row=>{
@@ -1091,7 +1127,7 @@
             const planArray=allDataPageB_Plans.map(r=>({name:r['計畫名稱'],cut:parseMoney(r['刪減金額']),freeze:parseMoney(r['凍結金額'])})).filter(r=>r.name);renderRankList('rank-plan-cut',[...planArray].sort((a,b)=>b.cut-a.cut).slice(0,5),'cut');renderRankList('rank-plan-freeze',[...planArray].sort((a,b)=>b.freeze-a.freeze).slice(0,5),'freeze');
         }
 
-        // [v140] Restored
+        // [v142] Restored
         function filterLegislators(party) {
             document.querySelectorAll('.filter-tag').forEach(btn => {
                 btn.classList.remove('active');
@@ -1103,7 +1139,7 @@
             renderLegislatorGrid(filtered);
         }
 
-        // [v140] Restored
+        // [v142] Restored
         function initMinistrySection() {
             const ministrySelect = document.getElementById('filter-ministry');
             if(!allDataPageA || allDataPageA.length === 0) return;
@@ -1113,7 +1149,7 @@
             ministrySelect.innerHTML = html;
         }
 
-        // [v140] Restored
+        // [v142] Restored
         function updateMinistryStats() {
             const selectedMinistry = document.getElementById('filter-ministry').value;
             const unitSelect = document.getElementById('filter-unit');
@@ -1201,10 +1237,10 @@
 
         // --- 6. Render Functions ---
 
-        // [v140] Restored
+        // [v142] Restored
         function renderRankList(elementId,list,type){const el=document.getElementById(elementId);if(!list||list.length===0){el.innerHTML='<li style="color:#999;">無資料</li>';return}let html='';list.forEach((item,index)=>{let val=type==='cut'?item.cut:item.freeze;let valDisplay=formatCurrency(val);let colorClass=type==='cut'?'color-cut':'color-freeze';html+=`<li><span><span class="rank-idx">${index+1}</span> ${item.name}</span><span class="rank-val ${colorClass}">${valDisplay}</span></li>`});el.innerHTML=html}
 
-        // [v140] Restored
+        // [v142] Restored
         function renderLegislatorGrid(data) {
             const container = document.getElementById('leg-container-c');
             if(!data || data.length === 0) { container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #999;">無資料</p>'; return; }
@@ -1245,7 +1281,7 @@
             container.innerHTML = html;
         }
 
-        // [v140] Restored
+        // [v142] Restored
         function renderProposalTable(data) {
             const container = document.getElementById('proposal-table-body');
             if(!container) return;
@@ -1565,7 +1601,7 @@
             return raw;
         }
 
-        // [v116] Render Timeline (Grouped)
+        // [v144] Special Timeline Rendering
         function renderTimeline(data) {
             const container = document.getElementById('budget-timeline');
             if (!container) return;
@@ -1581,13 +1617,29 @@
             let html = '<ul class="timeline">';
             Object.keys(grouped).forEach(date => {
                 const events = grouped[date];
-                let eventsHtml = '';
-                events.forEach(ev => {
-                    let linkBtn = '';
-                    if (ev['連結']) { linkBtn = `<a href="${ev['連結']}" target="_blank" class="timeline-link-btn">📄 相關公報</a>`; }
-                    eventsHtml += `<div class="timeline-event-row"><div class="timeline-event-title">${ev['事項']} ${linkBtn}</div></div>`;
-                });
-                html += `<li class="timeline-item"><div class="timeline-marker"></div><div class="timeline-content"><span class="timeline-date">${date}</span><div class="timeline-events">${eventsHtml}</div></div></li>`;
+                
+                // Check if this date has a special "deadline line" event
+                const deadlineEvent = events.find(e => e['事項'] && e['事項'].startsWith('[LINE]'));
+
+                if (deadlineEvent) {
+                     const text = deadlineEvent['事項'].replace('[LINE]', '').trim();
+                     html += `<li class="timeline-item timeline-deadline-item">
+                                <div class="timeline-deadline-row">
+                                    <span class="timeline-deadline-text">${date} ${text}</span>
+                                </div>
+                              </li>`;
+                     // Optional: If you want to show other events on the same day below the line, uncomment below:
+                     // const otherEvents = events.filter(e => !e['事項'].startsWith('[LINE]'));
+                     // if (otherEvents.length > 0) { ... standard render logic ... }
+                } else {
+                    let eventsHtml = '';
+                    events.forEach(ev => {
+                        let linkBtn = '';
+                        if (ev['連結']) { linkBtn = `<a href="${ev['連結']}" target="_blank" class="timeline-link-btn">📄 相關公報</a>`; }
+                        eventsHtml += `<div class="timeline-event-row"><div class="timeline-event-title">${ev['事項']} ${linkBtn}</div></div>`;
+                    });
+                    html += `<li class="timeline-item"><div class="timeline-marker"></div><div class="timeline-content"><span class="timeline-date">${date}</span><div class="timeline-events">${eventsHtml}</div></div></li>`;
+                }
             });
             html += '</ul>';
             container.innerHTML = html;
