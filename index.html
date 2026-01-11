@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>中央政府總預算觀測站 (v161 軍事圖例修復版)</title>
+    <title>中央政府總預算觀測站 (v162 統刪與圖例最終修正版)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -442,6 +442,41 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .error-message { text-align:center; padding: 20px; color: #E74C3C; background: #ffeaea; border-radius: 10px; border: 1px solid #E74C3C; max-width: 80%; }
         .demo-mode-badge { background: var(--warning-color); color: var(--primary-color); padding: 8px 16px; border-radius: 50px; font-weight: bold; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: none; }
+        
+        /* [v142] RWD Optimization */
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 15px; padding: 1rem; } 
+            header nav { width: 100%; justify-content: center; flex-wrap: wrap; } 
+            header nav button { flex: 1; min-width: 80px; text-align: center; } 
+            main { padding: 1rem; }
+            .btn-group { flex-direction: column; gap: 15px; }
+            .big-btn { width: 100%; }
+            .chart-container { height: 250px; }
+            
+            /* Ranking: Force 1 column on mobile */
+            .ranking-container { grid-template-columns: 1fr !important; gap: 20px; }
+            
+            .modal-charts-grid { grid-template-columns: 1fr; }
+            .search-input-lg { font-size: 16px; padding: 12px 20px; }
+            .project-block { grid-template-columns: 1fr; gap: 10px; border-left-width: 6px; }
+            .pb-amount { text-align: left; margin-left: 0; font-size: 1.3rem; }
+            .legislator-grid { grid-template-columns: 1fr; }
+            .leg-modal-body { padding: 20px; }
+            .bill-container { padding: 5% 10%; border-width: 1px; }
+            .modal-header-area { padding: 20px; }
+            .modal-body-area { padding: 20px; }
+            
+            /* Ministry Dashboard: Vertical Stack */
+            .ministry-dashboard { grid-template-columns: 1fr !important; gap: 20px; }
+            .ministry-filters { flex-direction: column; }
+            
+            /* Typography on Mobile */
+            .article-title { font-size: 1.8rem; }
+            .article-text { font-size: 1rem; }
+            
+            /* Fix Content Blocks */
+            .content-block { margin-top: 2rem; margin-bottom: 4rem; min-height: auto; }
+        }
     </style>
 </head>
 <body>
@@ -489,10 +524,10 @@
                     
                     <div class="modal-analysis-section">
                         <div class="analysis-title">本計畫佔比分析</div>
-                        
-                        <div id="analysis-normal" class="modal-charts-grid">
+                        <div class="modal-charts-grid" id="analysis-normal">
                             <div class="mini-chart-box">
-                                <h4>所屬機關佔比</h4> <div style="height:120px;"><canvas id="chartModalPlanRatio"></canvas></div>
+                                <h4>所屬機關佔比</h4>
+                                <div style="height:120px;"><canvas id="chartModalPlanRatio"></canvas></div>
                                 <p id="caption-plan-ratio" style="font-size:0.85rem; color:#666; margin-top:10px; font-weight:bold;">本計畫金額 vs 主管機關總預算</p>
                             </div>
                             <div class="mini-chart-box">
@@ -502,13 +537,15 @@
                             </div>
                         </div>
 
-                        <div id="analysis-military" class="modal-charts-grid" style="display:none; grid-template-columns: 1fr;"> 
+                         <div id="analysis-military" class="modal-charts-grid" style="display:none; grid-template-columns: 1fr;"> 
                             <div class="mini-chart-box">
-                                <h4>所屬機關佔比（國防部所屬）</h4> <div style="height:120px;"><canvas id="chartMilMndRatio"></canvas></div>
+                                <h4>所屬機關佔比（國防部所屬）</h4>
+                                <div style="height:120px;"><canvas id="chartMilMndRatio"></canvas></div>
                                 <p id="caption-mil-mnd-ratio" style="font-size:0.85rem; color:#666; margin-top:10px; font-weight:bold;"></p>
                             </div>
                             <div class="mini-chart-box">
-                                <h4 id="title-mil-unit-ratio">所屬機關佔比</h4> <div style="height:120px;"><canvas id="chartMilUnitRatio"></canvas></div>
+                                <h4 id="title-mil-unit-ratio">所屬機關佔比</h4>
+                                <div style="height:120px;"><canvas id="chartMilUnitRatio"></canvas></div>
                                 <p id="caption-mil-unit-ratio" style="font-size:0.85rem; color:#666; margin-top:10px; font-weight:bold;"></p>
                             </div>
                             <div class="mini-chart-box">
@@ -522,7 +559,6 @@
                                 <p id="caption-mil-unit-cat" style="font-size:0.85rem; color:#666; margin-top:10px; font-weight:bold;"></p>
                             </div>
                         </div>
-
                     </div>
                 </div>
                 <div id="tab-content-review" class="tab-content">
@@ -599,7 +635,6 @@
 
     <main>
         <section id="home" class="page-section active">
-            
             <div class="content-block hero-section">
                 <div class="hero">
                     <h2 class="article-title">總預算案持續追蹤<br>互動圖表掌握審查進度刪凍情況</h2>
@@ -612,7 +647,6 @@
                     <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
                 </div>
             </div>
-
             <div class="content-block">
                 <div class="article-text">
                     <p>行政院會114年8月21日通過「115年度中央政府總預算案暨附屬單位預算及綜計表」，並於9月送入立法院。</p>
@@ -653,21 +687,18 @@
                 </div>
             </div>
 
-            <div class="article-text">
+            <div class="content-block">
+                <div class="article-text">
                     <p>另外，我們也整理了今年總預算案編列情形提供讀者參考。</p>
                     <p>115年度總預算案受新版財劃法釋出財源給地方的影響，歲入共編列新台幣2兆8623億元，較114年度大幅減少3025億元。</p>
                     <p>歲出編列則為3兆350億元，較114年度預算增加1100億，是近10年總預算案歲出編列第2高的金額。</p>
-                    <p>歲出為各項工作計畫的支出，但不包含償還債務；歲入則是為支應個工作計畫所籌措的財源，不包含舉債和前一年度歲計剩餘。</p>
+                    <p>當中占比最多8318億元用於社會福利、5566億元用於教育科學文化、5488億元用於國防、4275億元用於經濟發展。其中國防支出增加最多、教育科學文化支出最少。</p>
                 </div>
                 <div class="card">
                     <h3>歷年預算案歲出比較</h3>
                     <div class="chart-container"><canvas id="chartYearly"></canvas></div>
                 </div>
-
-                <div class="article-text">
-                    <p>歲出編列時會依據其業務性質做科目分類，也就是「政事別」。根據「歲出政事別科目歸類原則與範圍」規定，政事別科目區分為大分類、中分類、業務計畫3個層次，其中大分類包括一般政務、國防、經濟發展、教育科學文化等9大項目。</p>
-                    <p>今年占比最多8318億元用於社會福利、5566億元用於教育科學文化、5488億元用於國防、4275億元用於經濟發展。其中國防支出增加最多、教育科學文化支出最少。</p>
-                </div>
+                
                 <div class="card">
                     <h3>115 年度預算案分配概況</h3>
                     <div class="bill-container">
@@ -775,13 +806,13 @@
             'page-a': getQueryUrl('612819456'), 
             'page-b': getQueryUrl('1304436957'), 
             'page-c': getQueryUrl('1025885437'),
-            // [v121] Updated Timeline GID
             'page-d': getQueryUrl('1462843513') 
         };
 
+        // [v153] Updated Mock Data for new table structure
         const MOCK_DATA_A=[{'計畫編號':'TEST001','所屬部會':'行政院','主管機關':'國防部','計畫名稱':'國防自主強化計畫 (測試資料)','預算金額':'5000000000','114年預算金額':'4800000000','政事別':'國防','工作內容':'測試說明。','分支計畫':'潛艦國造:3000000000|無人機研發:2000000000','用途比例':'人事費:50000000|業務費:30000000|設備及投資:4000000000|獎補助費:10000000|債務費:0|預備金:0'}];
-        const MOCK_DATA_B=[{'計畫編號':'TEST001','計畫名稱':'國防自主強化計畫','主管機關':'國防部','預算金額':'5000000000','刪減金額':'1000000','凍結金額':'50000000','委員會刪減':'500000','委員會凍結':'20000000','院會表決刪減':'500000','院會表決凍結':'30000000','通案刪減':'100000','通案凍結':'0','提案紀錄':'王小明:凍結:理由A','資料類型':'計畫'}];
-        const MOCK_DATA_C=[{'委員姓名':'王小明','黨籍':'無黨籍','刪減案數':'5','凍結案數':'10','主決議數':'2','照片':'','提案明細':'刪減#國防自主強化計畫 (測試資料)#100萬#理由B#TEST001'}];
+        const MOCK_DATA_B=[{'計畫編號':'TEST001','計畫名稱':'國防自主強化計畫','主管機關':'國防部','預算金額':'5000000000','刪減金額':'1000000','凍結金額':'50000000','委員會刪減':'500000','委員會凍結':'20000000','院會表決刪減':'500000','院會表決凍結':'30000000','通案刪減':'100000','通案凍結':'0','提案紀錄':'王小明:凍結:人事費:理由A','資料類型':'計畫'}];
+        const MOCK_DATA_C=[{'委員姓名':'王小明','黨籍':'無黨籍','刪減案數':'5','凍結案數':'10','主決議數':'2','照片':'','提案明細':'刪減#國防自主強化計畫 (測試資料)#設備採購#100萬#理由B#TEST001#通過'}];
         const MOCK_DATA_D=[
             {'日期':'113/08/22', '事項':'行政院通過總預算案', '連結':''},
             {'日期':'113/08/30', '事項':'預算案送立法院審議', '連結':''},
@@ -1042,7 +1073,7 @@
             else { alert(`查無此委員資料 (${targetName})`); }
         }
 
-        // [v160] Restored openDetailC Function (Crucially missing in previous version)
+        // [v162] Restored openDetailC Function + Update button logic to includes('000000')
         function openDetailC(jsonStr) {
             const data = JSON.parse(decodeURIComponent(jsonStr));
             
@@ -1099,8 +1130,8 @@
                     if(parts.length >= 7) {
                         const projectId = parts[5] ? parts[5].trim() : '';
                         
-                        // [v154] Logic to hide button for Agency IDs or 'General Cut'
-                        const isAgencyLevel = projectId.endsWith('000000') || parts[1].includes('統刪');
+                        // [v162] Updated Logic: Hide button if ID includes '000000' or Name has '統刪'
+                        const isAgencyLevel = projectId.includes('000000') || parts[1].includes('統刪');
                         const btnHtml = (projectId && !isAgencyLevel) ? `<br><button class="jump-btn" onclick="jumpToProjectB('${projectId}')">查看計畫</button>` : '';
                         
                         const manualResult = parts[6] ? parts[6].trim() : ''; 
@@ -1139,7 +1170,7 @@
                     } 
                     // Fallback for old data format (length 6) if necessary
                     else if (parts.length >= 6) {
-                         // Simple fallback logic omitted for brevity, assuming new format for this fix
+                         // Simple fallback logic omitted for brevity
                     }
                 });
             }
@@ -1452,7 +1483,7 @@
             container.innerHTML = rows;
         }
 
-        // [v154] Fixed displayUnifiedBlocks to hide agency-level or 'general cut' items
+        // [v162] Fixed displayUnifiedBlocks to hide agency-level or 'general cut' items
         function displayUnifiedBlocks(data){
             const container=document.getElementById('results-container-budget');
             
@@ -1463,8 +1494,8 @@
                 // Allow if budget is > 0 OR if there are cuts/freezes (even if budget is 0)
                 const hasValue = (amt !== 0 || cut !== 0 || freeze !== 0);
 
-                // [v154 Fix] Filter out items that are agency-level summaries or general cuts
-                const isAgencySummary = (row['計畫編號'] || '').trim().endsWith('000000');
+                // [v162 Fix] Using includes('000000') to catch all agency levels
+                const isAgencySummary = (row['計畫編號'] || '').trim().includes('000000');
                 const isGeneralCut = (row['計畫名稱'] || '').includes('統刪');
 
                 return hasValue && !isAgencySummary && !isGeneralCut;
@@ -1605,6 +1636,7 @@
                     
                     document.getElementById('caption-mil-mnd-ratio').innerText = `本計畫金額占${mndLabel.replace('所屬機關佔比（','').replace('）','')}預算 ${mndRatio}%`;
                     
+                    // [v161] Fix Legend Visibility
                     chartMilMndRatio = new Chart(ctx1, {
                         type: 'bar', data: { labels: ['金額'], datasets: [{ label: '本計畫', data: [projectBudget], backgroundColor: '#E74C3C', stack:'S0'}, { label: '機關其他', data: [mndTotalBudget - projectBudget], backgroundColor: '#ecf0f1', stack:'S0'}] },
                         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, display: false }, y: { display: false, stacked: true } }, plugins: { legend: { position:'bottom' }, tooltip: tooltipCurrencyCallback } }
@@ -1616,6 +1648,7 @@
                     const unitRatio = (unitTotalBudget > 0) ? (projectBudget / unitTotalBudget * 100).toFixed(2) : 0;
                     document.getElementById('caption-mil-unit-ratio').innerText = `本計畫金額占${unitLabel.replace('所屬機關佔比（','').replace('）','')}預算 ${unitRatio}%`;
                     
+                    // [v161] Fix Legend Visibility
                     chartMilUnitRatio = new Chart(ctx2, {
                         type: 'bar', data: { labels: ['金額'], datasets: [{ label: '本計畫', data: [projectBudget], backgroundColor: '#E74C3C', stack:'S0'}, { label: '單位其他', data: [unitTotalBudget - projectBudget], backgroundColor: '#ecf0f1', stack:'S0'}] },
                         options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, display: false }, y: { display: false, stacked: true } }, plugins: { legend: { position:'bottom' }, tooltip: tooltipCurrencyCallback } }
